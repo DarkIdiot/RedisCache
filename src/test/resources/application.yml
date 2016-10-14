@@ -1,0 +1,53 @@
+spring:
+    application:
+      name: superman-user
+    datasource:
+        url: jdbc:log4jdbc:mysql://10.128.31.112:3306/account_center?useUnicode=true&characterEncoding=UTF8&autoReconnect=true
+        username: root
+        password: wduser
+        # 使用druid数据源
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: net.sf.log4jdbc.DriverSpy
+mybatis:
+  mapperLocations: classpath*:mapper/*.xml
+  typeAliasesPackage: com.gome.superman.user.model,com.gome.superman.common.model
+
+
+#Dubbo autoconfig
+
+dubbo:
+    name: superman-user-service
+    registry: 127.0.0.1:2181
+    port: -1
+    timeout: 1000
+    threads: 100
+    heartBeats: 10000
+
+#zookeeper
+
+zookeeper:
+    host: 127.0.0.1
+    port: 2181
+
+#redis
+redis:
+    ip: 127.0.0.1
+    port: 6379
+    pool.maxActive: 100
+    pool.maxIdle: 100
+
+# LOGGING
+logging:
+    config: classpath:logback-spring.xml
+    #file: ${spring.application.name}.log
+    path: logs/${spring.application.name}
+    level:
+        root: INFO
+        jdbc.sqlonly: WARN
+        jdbc.sqltiming: INFO
+        jdbc.resultsettable: INFO
+        jdbc.resultset: WARN
+        jdbc.connection: WARN
+        jdbc.audit: WARN
+server:
+  port: 8081

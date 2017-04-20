@@ -20,9 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-@Component
 @Slf4j
-@EnableAutoConfiguration
 public class JedisPoolFactory {
 	@Autowired
 	static RedisInitParam initParam;
@@ -50,7 +48,7 @@ public class JedisPoolFactory {
 	public static JedisPool getReadPool(){
 		JedisPool readPool = jedisPoolMap.get(READ);
 		if (readPool == null) {
-			readPool = getPool(initParam.getWirte(), READ);
+			readPool = getPool(initParam.getWrite(), READ);
 			jedisPoolMap.put(READ, readPool);
 		}
 		return readPool;
@@ -58,8 +56,8 @@ public class JedisPoolFactory {
 
 	public static JedisPool getWritePool(){
 		JedisPool writePool = jedisPoolMap.get(WRITE);
-		if (writePool == null) {
-			writePool = getPool(initParam.getWirte(), WRITE);
+        if (writePool == null) {
+			writePool = getPool(initParam.getWrite(), WRITE);
 			jedisPoolMap.put(WRITE, writePool);
 		}
 		return writePool;
@@ -87,8 +85,7 @@ public class JedisPoolFactory {
 		config.setTestOnReturn(testOnReturn);
 		config.setMaxWaitMillis(maxWaitMillis);
 		config.setMaxIdle(maxIdle);
-		JedisPool jedisPool = new JedisPool(config,ip,port,timeout,password);
-		return jedisPool;
+        return new JedisPool(config,ip,port,timeout,password);
 	}
 	
 	public static RedisInitParam getInitParam() {

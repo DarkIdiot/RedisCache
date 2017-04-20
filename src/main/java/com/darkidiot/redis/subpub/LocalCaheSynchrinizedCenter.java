@@ -32,16 +32,16 @@ public class LocalCaheSynchrinizedCenter {
 	
 	/** 服务开启就开启本地缓存同步策略  */
 	static{
-		LocalCaheSynchrinizedCenterThread caheSynchrinizedThread = new LocalCaheSynchrinizedCenterThread();
-		caheSynchrinizedThread.start();
+		LocalCacheSynchronizedCenterThread cacheSynchrinizedThread = new LocalCacheSynchronizedCenterThread();
+        cacheSynchrinizedThread.start();
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 			@Override
 			public void run() {
 				// 销毁订阅线程
-				LocalCaheSynchrinizedCenterThread.flag = false;
+                LocalCacheSynchronizedCenterThread.flag = false;
 				try {
-					caheSynchrinizedThread.interrupt();
-					caheSynchrinizedThread.join();
+                    cacheSynchrinizedThread.interrupt();
+                    cacheSynchrinizedThread.join();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -52,8 +52,6 @@ public class LocalCaheSynchrinizedCenter {
 	
 	/**
 	 * 订阅消息
-	 * @param name 配置名称
-	 * @param jedis IJedis
 	 * @param localCache 本地缓存
 	 */
 	public synchronized static void subscribe(LocalMap<String, ? extends Serializable> localCache){
@@ -66,7 +64,6 @@ public class LocalCaheSynchrinizedCenter {
 	
 	/**
 	 * 消费消息
-	 * @param maps Redis相关的Map
 	 * @param message 消息
 	 */
 	public static void consume(String message){
@@ -128,11 +125,11 @@ public class LocalCaheSynchrinizedCenter {
 	}
 	
 	/**订阅线程*/
-	public static class LocalCaheSynchrinizedCenterThread extends Thread{
+	public static class LocalCacheSynchronizedCenterThread extends Thread{
 		
 		public static volatile boolean flag = true;
 		
-		public LocalCaheSynchrinizedCenterThread() {
+		public LocalCacheSynchronizedCenterThread() {
 			this.setName("RedisMap subscribe " + TOPIC_SYNCHRONIZED_LOCAL_CACHE + " " + LOCAL_CACHES.size());
 			this.setDaemon(true);
 		}

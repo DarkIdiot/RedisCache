@@ -7,11 +7,11 @@ package com.darkidiot.redis.config;
 interface RedisPropertyConstants {
 	String DEFAULT_CONFIG_KEY = "default";
 
-	//properties文件中，与redis配置匹配的代码
+	//properties文件中，与redis配置匹配的代码 (%s标识对应的服务)
 	String PKEY_IP = "%s.ip";
 	String PKEY_PORT = "%s.port";
-	String PKEY_TIMEOUTINMILLIS = "%s.timeoutInMillis";
-	String PKEY_PASSWORD = "%s.password";
+    String PKEY_PASSWORD = "%s.password";
+    String PKEY_TIMEOUTINMILLIS = "%s.timeoutInMillis";
 	String PKEY_MAXACTIVE = "%s.maxActive";
 	String PKEY_MAXIDLE = "%s.maxIdle";
 	String PKEY_MAXWAIT = "%s.maxWait";
@@ -22,7 +22,7 @@ interface RedisPropertyConstants {
 	String WRITE = "%s.write";
 	String READ = "%s.read";
 	/** .yml文件中ip:port?password正则表达式 */
-	String IP_PORT_PASSWORD = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\:(\\d+)\\?([a-zA-Z0-9]+)";
+	String IP_PORT_PASSWORD = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\:(\\d+)\\?([a-zA-Z0-9]*)";
 
 	//默认属性配置
 	int DEFAULT_TIMEOUT = 10;

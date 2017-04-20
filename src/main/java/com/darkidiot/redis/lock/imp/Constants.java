@@ -1,8 +1,8 @@
 package com.darkidiot.redis.lock.imp;
 
 
-public class Constants {
-	static final String LOCK_PREFIX = "Lock:";
+class Constants {
+	private static final String LOCK_PREFIX = "Lock:";
 	
 	static final String LOCK_UNLOCK = "Lock:unlock";
 

@@ -22,7 +22,7 @@ public class CommonUtil {
 		}
 	}
 
-	public static interface Callback<T> {
+	public interface Callback<T> {
 		T call(redis.clients.jedis.Jedis jedis);
 	}
 }

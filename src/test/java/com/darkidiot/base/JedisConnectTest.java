@@ -30,7 +30,7 @@ public class JedisConnectTest {
                 new JedisShardInfo("127.0.0.1",6379)); //使用相同的ip:port,仅作测试
 
 
-        jedis = new Jedis("127.0.0.1",6379); 
+        jedis = new Jedis("127.0.0.1",6379);
         sharding = new ShardedJedis(shards);
         pool = new ShardedJedisPool(new JedisPoolConfig(), shards);
     }

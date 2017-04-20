@@ -9,9 +9,9 @@ import com.google.common.collect.Lists;
 
 public class IPorServerConfig {
 
-	public static String getIP() {
+	private static String getIP() {
 		try {
-			ArrayList<String> addrList = Lists.newArrayList();
+			ArrayList<String> addressList = Lists.newArrayList();
 			for (Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces(); interfaces.hasMoreElements();) {
 				NetworkInterface networkInterface = interfaces.nextElement();
 				if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp()) {
@@ -21,17 +21,17 @@ public class IPorServerConfig {
 				if (addresses.hasMoreElements()) {
 					InetAddress addr = addresses.nextElement();
 					if (addr != null && addr.getHostAddress() != null) {
-						addrList.add(addr.getHostAddress());
+                        addressList.add(addr.getHostAddress());
 					}
 				}
 			}
-			return addrList.toString();
+			return addressList.toString();
 		} catch (Exception e) {
 			return null;
 		}
 	}
 	
-	public static String getServerName() {
+	private static String getServerName() {
 		return JedisPoolFactory.getInitParam().getServerName();
 	}
 	

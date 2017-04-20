@@ -20,9 +20,9 @@ import redis.clients.jedis.exceptions.JedisException;
  */
 @Slf4j
 public class RigorousRedisLock implements Lock {
-	
+
 	private static int MAX_SUPPORT_THREAD_COUNT = 5;
-	
+
 	JedisPool jedisPool;
 	String name;
 	Semaphore semaphore;
@@ -139,7 +139,7 @@ public class RigorousRedisLock implements Lock {
 	    	return false;
 	    }
 	}
-	
+
 	@Override
 	public String getName() throws RedisException {
 		return name;

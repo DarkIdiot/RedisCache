@@ -3,16 +3,16 @@ package com.darkidiot.redis.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
+import org.springframework.context.annotation.Bean;
 
 /**
  * Redis初始化参数列表
  * @author darkidiot
  */
 @Data
-@ConfigurationProperties(prefix = "redis")
 public class RedisInitParam {
 	//ip:port?password  写redis
-	private String wirte;
+	private String write;
 	//ip:port?password 读redis
 	private String read;
 	// JedisPool链接超时时间

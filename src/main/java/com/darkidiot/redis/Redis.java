@@ -6,6 +6,7 @@ import java.io.Serializable;
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.jedis.imp.Jedis;
+import org.springframework.stereotype.Component;
 
 /**
  * Redis工厂类
@@ -22,7 +23,7 @@ public class Redis {
 	 */
 	public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use(String name){
 		IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(), JedisPoolFactory.getReadPool());
-		return new RedisMapProxy<K,V>(name,jedis);
+		return new RedisMapProxy<>(name, jedis);
 	}
 	
 }

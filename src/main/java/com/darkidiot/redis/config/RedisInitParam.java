@@ -1,7 +1,5 @@
 package com.darkidiot.redis.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Data;
 
 /**
@@ -9,7 +7,6 @@ import lombok.Data;
  * @author darkidiot
  */
 @Data
-@ConfigurationProperties(prefix = "redis")
 public class RedisInitParam {
 	//ip:port?password  写redis
 	private String wirte;

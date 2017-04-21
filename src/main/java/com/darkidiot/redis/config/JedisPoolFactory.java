@@ -74,10 +74,10 @@ public class JedisPoolFactory {
 		int port = Integer.parseInt(matcher.group(2));
 		String password = matcher.group(3);
 		RedisParam param = new RedisParam(ip, port, password);
-		boolean testOnBorrow = getBooleanWithDefault(initParam.getTestOnBorrow(), DEFAULT_TESTONBORROW);
-		boolean testOnReturn = getBooleanWithDefault(initParam.getTestOnReturn(), DEFAULT_TESTONRETURN);
-		long maxWaitMillis = getLongWithDefault(initParam.getMaxWaitMillis(), DEFAULT_MAXWAIT);
-		int maxIdle = getIntWithDefault(initParam.getMaxIdle(), DEFAULT_MAXIDLE);
+		boolean testOnBorrow = getBooleanWithDefault(initParam.getTestOnBorrow(), DEFAULT_TEST_ON_BORROW);
+		boolean testOnReturn = getBooleanWithDefault(initParam.getTestOnReturn(), DEFAULT_TEST_ON_RETURN);
+		long maxWaitMillis = getLongWithDefault(initParam.getMaxWaitMillis(), DEFAULT_MAX_WAIT);
+		int maxIdle = getIntWithDefault(initParam.getMaxIdle(), DEFAULT_MAX_IDLE);
 		int timeout = getIntWithDefault(initParam.getTimeout(), DEFAULT_TIMEOUT);
 		String serverId = initParam.getServerName();
 		param.config(timeout,maxWaitMillis, maxIdle, testOnBorrow, testOnReturn, serverId);

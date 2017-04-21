@@ -5,5 +5,5 @@ package com.darkidiot.redis.validate;
  * @author darkidiot
  */
 public interface KeyValidation<K> {
-	public boolean validate(K key);
+	boolean validate(K key);
 }

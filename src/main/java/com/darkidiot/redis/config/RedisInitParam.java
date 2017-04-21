@@ -1,9 +1,6 @@
 package com.darkidiot.redis.config;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Data;
-import org.springframework.context.annotation.Bean;
 
 /**
  * Redis初始化参数列表

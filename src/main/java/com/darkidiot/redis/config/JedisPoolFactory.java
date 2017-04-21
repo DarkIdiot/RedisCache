@@ -1,28 +1,19 @@
 package com.darkidiot.redis.config;
 
-import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_MAXIDLE;
-import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_MAXWAIT;
-import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_TESTONBORROW;
-import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_TESTONRETURN;
-import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_TIMEOUT;
-import static com.darkidiot.redis.config.RedisPropertyConstants.IP_PORT_PASSWORD;
+import lombok.extern.slf4j.Slf4j;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
+import static com.darkidiot.redis.config.RedisPropertyConstants.*;
 
 @Slf4j
 public class JedisPoolFactory {
-	@Autowired
+
 	static RedisInitParam initParam;
 
 	private static final String READ = "READ";
@@ -43,9 +34,19 @@ public class JedisPoolFactory {
 				}
 			}
 		});
+        initParam();
 	}
-	
-	public static JedisPool getReadPool(){
+
+    /**
+     * 初始化配置文件
+     */
+    private static void initParam() {
+
+
+
+    }
+
+    public static JedisPool getReadPool(){
 		JedisPool readPool = jedisPoolMap.get(READ);
 		if (readPool == null) {
 			readPool = getPool(initParam.getWrite(), READ);

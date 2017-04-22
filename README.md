@@ -1,10 +1,15 @@
 # Redis Cache
 ### Tips：
-     required: JDK1.8+
+     required: JDK1.7+
 # Overview
-##### RedisCache是基于jedis开源jar包的二次开发，实现了防穿透缓存，分布式锁，分布式队列，以及本地缓存等功能。
-# basic configuration:
+##### RedisCache是基于Redis的客户端，实现了防穿透缓存，分布式锁，分布式队列，以及本地缓存等功能。
+# configuration:
+## connection
+### mode one
 
+## basic
+#### redis.[.read].pool.testOnReturn=false
+#### redis.[.write].pool.testOnReturn=false
 # Usage:
 
 # Dependencies:

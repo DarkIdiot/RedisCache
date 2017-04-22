@@ -55,7 +55,7 @@ public class RedisLock {
 		}, STRICT_LOCK_PREFIX, lockname);
 	}
 	
-	private static interface Callback {
+	private interface Callback {
 		Lock call(JedisPool jedisPool) throws RedisException ;
 	}
 	

@@ -19,10 +19,8 @@ public interface Lock {
 	public String lock(long acquireTimeout, long lockTimeout) throws RedisException;
 	
 	/**
-	 * 加锁
-	 * @param acquireTimeout 获取锁超时时间(秒)(默认10秒)
-	 * @param lockTimeout 锁的超时时间(秒)(默认50秒)
-	 * @return identifier 
+	 * 加锁(acquireTimeout:默认10秒,lockTimeout:默认50秒)
+	 * @return identifier
 	 */
 	public String lock() throws RedisException;
 	
@@ -35,7 +33,7 @@ public interface Lock {
 	
 	/**
 	 * 判断是否加锁成功 
-	 * @param lockName
+	 * @param identifier
 	 */
 	public boolean isLocking(String identifier) throws RedisException;
 	

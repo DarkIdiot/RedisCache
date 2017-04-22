@@ -1,27 +1,28 @@
 package com.darkidiot.redis.jedis.imp;
 
-import static com.darkidiot.redis.common.JedisType.READ;
-import static com.darkidiot.redis.common.JedisType.WRITE;
+import com.darkidiot.redis.common.JedisType;
+import com.darkidiot.redis.jedis.IJedis;
+import com.darkidiot.redis.util.ByteObjectConvertUtil;
+import lombok.Data;
+import redis.clients.jedis.BinaryClient;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.darkidiot.redis.util.CommonUtil;
-import com.darkidiot.redis.common.JedisType;
-import com.darkidiot.redis.jedis.IJedis;
-import com.darkidiot.redis.util.ByteObjectConvertUtil;
-
-import redis.clients.jedis.BinaryClient;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.Tuple;
-
+import static com.darkidiot.redis.common.JedisType.READ;
+import static com.darkidiot.redis.common.JedisType.WRITE;
+import static com.darkidiot.redis.util.CommonUtil.Callback;
+import static com.darkidiot.redis.util.CommonUtil.invoke;
 /**
  * Redis缓存实现类，支持读写分离(链接自动关闭)
  * @author darkidiot
  */
+@Data
 public class Jedis implements IJedis {
 
 	/** 读线程池 */
@@ -35,22 +36,6 @@ public class Jedis implements IJedis {
 		}
 		this.readJedisPool = readJedisPool;
 		this.writeJedisPool = writeJedisPool;
-	}
-
-	public JedisPool getWriteJedisPool() {
-		return writeJedisPool;
-	}
-
-	public void setWriteJedisPool(JedisPool writeJedisPool) {
-		this.writeJedisPool = writeJedisPool;
-	}
-
-	public JedisPool getReadJedisPool() {
-		return readJedisPool;
-	}
-
-	public void setReadJedisPool(JedisPool readJedisPool) {
-		this.readJedisPool = readJedisPool;
 	}
 
 	/**
@@ -79,14 +64,14 @@ public class Jedis implements IJedis {
 		}
 	}
 
-	private <T> T handle(CommonUtil.Callback<T> call, JedisType type) {
+	private <T> T handle(Callback<T> call, JedisType type) {
 		JedisPool pool = getJedisPoolByType(type);
-		return CommonUtil.invoke(call, pool);
+		return invoke(call, pool);
 	}
 
 	@Override
 	public Set<Tuple> zrangeWithScores(final byte[] key, final int offset, final int len) {
-			return handle(new CommonUtil.Callback<Set<Tuple>>() {
+			return handle(new Callback<Set<Tuple>>() {
 			@Override
 			public Set<Tuple> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrangeWithScores(key, offset, offset + len);
@@ -96,7 +81,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<Tuple> zrevrangeWithScores(final byte[] key, final int start, final int end) {
-		return handle(new CommonUtil.Callback<Set<Tuple>>() {
+		return handle(new Callback<Set<Tuple>>() {
 			@Override
 			public Set<Tuple> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrevrangeWithScores(key, start, end);
@@ -110,7 +95,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public boolean zadd(final byte[] key, final double score, final byte[] value) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zadd(key, score, value) == 1;
@@ -124,7 +109,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public boolean zadd(final String key, final double score, final String value) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zadd(key, score, value) == 1;
@@ -137,7 +122,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public boolean zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zadd(key, scoreMembers) == 1;
@@ -147,7 +132,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public double zscore(final byte[] key, final byte[] value) {
-		return handle(new CommonUtil.Callback<Double>() {
+		return handle(new Callback<Double>() {
 			@Override
 			public Double call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zscore(key, value);
@@ -157,7 +142,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max) {
-		return handle(new CommonUtil.Callback<Set<byte[]>>() {
+		return handle(new Callback<Set<byte[]>>() {
 			@Override
 			public Set<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrangeByScore(key, min, max);
@@ -171,7 +156,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public boolean zrem(final byte[] key, final byte[] value) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrem(key, value) == 1;
@@ -181,7 +166,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean exists(final byte[] key) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.exists(key);
@@ -191,7 +176,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String rename(final byte[] oldkey, final byte[] newkey) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.rename(oldkey, newkey);
@@ -201,7 +186,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long renamenx(final byte[] oldkey, final byte[] newkey) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.renamenx(oldkey, newkey);
@@ -211,7 +196,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public byte[] get(final byte[] key) {
-		return handle(new CommonUtil.Callback<byte[]>() {
+		return handle(new Callback<byte[]>() {
 			@Override
 			public byte[] call(redis.clients.jedis.Jedis jedis) {
 				return jedis.get(key);
@@ -224,7 +209,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public String set(final byte[] key, final byte[] value) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.set(key, value);
@@ -234,7 +219,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String set(final String key, final long value) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.set(key, value + "");
@@ -244,7 +229,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long incr(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.incr(key);
@@ -254,7 +239,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long incrBy(final byte[] key, final long value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.incrBy(key, value);
@@ -264,7 +249,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long decr(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.decr(key);
@@ -274,7 +259,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long decrBy(final byte[] key, final long value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.decrBy(key, value);
@@ -284,7 +269,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<byte[]> keys(final byte[] pattern) {
-		return handle(new CommonUtil.Callback<Set<byte[]>>() {
+		return handle(new Callback<Set<byte[]>>() {
 			@Override
 			public Set<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.keys(pattern);
@@ -294,7 +279,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zcard(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zcard(key);
@@ -304,7 +289,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zremrangeByRank(final byte[] key, final int offset, final int len) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zremrangeByRank(key, offset, offset + len);
@@ -314,7 +299,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zremrangeByRankV2(final byte[] key, final int start, final int end) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zremrangeByRank(key, start, end);
@@ -324,7 +309,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zremrangeByScore(final byte[] key, final int start, final int end) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zremrangeByScore(key, start, end);
@@ -341,7 +326,7 @@ public class Jedis implements IJedis {
 	 */
 	@Override
 	public String info() {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.info();
@@ -351,7 +336,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public byte[] hget(final byte[] key, final byte[] field) {
-		return handle(new CommonUtil.Callback<byte[]>() {
+		return handle(new Callback<byte[]>() {
 			@Override
 			public byte[] call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hget(key, field);
@@ -361,7 +346,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String hget(final String key, final String field) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hget(key, field);
@@ -371,7 +356,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long hset(final String key, final String field, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hset(key, field, value);
@@ -381,7 +366,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long hset(final byte[] key, final byte[] field, final byte[] value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hset(key, field, value);
@@ -391,7 +376,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long hdel(final String key, final String field) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hdel(key, field);
@@ -401,7 +386,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long hdel(final byte[] key, final byte[] field) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hdel(key, field);
@@ -411,7 +396,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Map<String, String> hgetAll(final String key) {
-		return handle(new CommonUtil.Callback<Map<String, String>>() {
+		return handle(new Callback<Map<String, String>>() {
 			@Override
 			public Map<String, String> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hgetAll(key);
@@ -421,7 +406,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Map<byte[], byte[]> hgetAll(final byte[] key) {
-		return handle(new CommonUtil.Callback<Map<byte[], byte[]>>() {
+		return handle(new Callback<Map<byte[], byte[]>>() {
 			@Override
 			public Map<byte[], byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hgetAll(key);
@@ -431,7 +416,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long hincrBy(final String key, final String field, final long value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hincrBy(key, field, value);
@@ -441,7 +426,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long expire(final String key, final int seconds) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.expire(key, seconds);
@@ -451,7 +436,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long del(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.del(key);
@@ -461,7 +446,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long del(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.del(key);
@@ -471,7 +456,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long expire(final byte[] key, final int seconds) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.expire(key, seconds);
@@ -481,7 +466,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long linsert(final String key, final boolean where, final String pivot, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				if (where)
@@ -494,7 +479,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long lpush(final String key, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lpush(key, value);
@@ -504,7 +489,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long rpush(final String key, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.rpush(key, value);
@@ -514,7 +499,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String ltrim(final String key, final long start, final long end) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.ltrim(key, start, end);
@@ -524,7 +509,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public List<String> lrange(final String key, final long start, final long end) {
-		return handle(new CommonUtil.Callback<List<String>>() {
+		return handle(new Callback<List<String>>() {
 			@Override
 			public List<String> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lrange(key, start, end);
@@ -534,7 +519,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String lindex(final String key, final int index) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lindex(key, index);
@@ -544,7 +529,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long llen(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.llen(key);
@@ -554,7 +539,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long lrem(final String key, final int count, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lrem(key, count, value);
@@ -564,7 +549,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<String> smembers(final String key) {
-		return handle(new CommonUtil.Callback<Set<String>>() {
+		return handle(new Callback<Set<String>>() {
 			@Override
 			public Set<String> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.smembers(key);
@@ -574,7 +559,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<byte[]> smembers(final byte[] key) {
-		return handle(new CommonUtil.Callback<Set<byte[]>>() {
+		return handle(new Callback<Set<byte[]>>() {
 			@Override
 			public Set<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.smembers(key);
@@ -584,7 +569,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long scard(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.scard(key);
@@ -594,7 +579,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long scard(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.scard(key);
@@ -604,7 +589,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long sadd(final byte[] key, final byte[]... members) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.sadd(key, members);
@@ -614,7 +599,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long sadd(final String key, final String... members) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.sadd(key, members);
@@ -624,7 +609,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long srem(final byte[] key, final byte[]... members) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.srem(key, members);
@@ -634,7 +619,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long srem(final String key, final String... members) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.srem(key, members);
@@ -644,7 +629,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean sismember(final String key, final String member) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.sismember(key, member);
@@ -654,7 +639,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean sismember(final byte[] key, final byte[] member) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.sismember(key, member);
@@ -664,7 +649,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String rpop(final String key) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.rpop(key);
@@ -674,7 +659,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public byte[] rpop(final byte[] key) {
-		return handle(new CommonUtil.Callback<byte[]>() {
+		return handle(new Callback<byte[]>() {
 			@Override
 			public byte[] call(redis.clients.jedis.Jedis jedis) {
 				return jedis.rpop(key);
@@ -684,7 +669,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long lpush(final byte[] key, final byte[] string) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lpush(key, string);
@@ -694,7 +679,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public List<byte[]> lrange(final byte[] key, final int start, final int end) {
-		return handle(new CommonUtil.Callback<List<byte[]>>() {
+		return handle(new Callback<List<byte[]>>() {
 			@Override
 			public List<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lrange(key, start, end);
@@ -704,7 +689,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public byte[] lpop(final byte[] key) {
-		return handle(new CommonUtil.Callback<byte[]>() {
+		return handle(new Callback<byte[]>() {
 			@Override
 			public byte[] call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lpop(key);
@@ -714,7 +699,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String lpop(final String key) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lpop(key);
@@ -724,7 +709,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long llen(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.llen(key);
@@ -734,7 +719,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long lrem(final byte[] key, final int count, final byte[] value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lrem(key, count, value);
@@ -744,7 +729,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String ltrim(final byte[] key, final int start, final int end) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.ltrim(key, start, end);
@@ -754,7 +739,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long rpush(final byte[] key, final byte[] string) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.rpush(key, string);
@@ -764,7 +749,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zunion(final String dstkey, final String... sets) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zunionstore(dstkey, sets);
@@ -774,7 +759,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
-		return handle(new CommonUtil.Callback<Set<Tuple>>() {
+		return handle(new Callback<Set<Tuple>>() {
 			@Override
 			public Set<Tuple> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrangeByScoreWithScores(key, min, max);
@@ -784,7 +769,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean hexists(final String key, final String field) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hexists(key, field);
@@ -794,7 +779,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean hexists(final byte[] key, final byte[] field) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hexists(key, field);
@@ -804,7 +789,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long incr(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.incr(key);
@@ -814,7 +799,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long incrBy(final String key, final long value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.incrBy(key, value);
@@ -824,7 +809,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long decr(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.decr(key);
@@ -834,7 +819,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long decrBy(final String key, final long value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.decrBy(key, value);
@@ -844,7 +829,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String get(final String key) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.get(key);
@@ -854,7 +839,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public boolean exists(final String key) {
-		return handle(new CommonUtil.Callback<Boolean>() {
+		return handle(new Callback<Boolean>() {
 			@Override
 			public Boolean call(redis.clients.jedis.Jedis jedis) {
 				return jedis.exists(key);
@@ -864,7 +849,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public String set(final String key, final String value) {
-		return handle(new CommonUtil.Callback<String>() {
+		return handle(new Callback<String>() {
 			@Override
 			public String call(redis.clients.jedis.Jedis jedis) {
 				return jedis.set(key, value);
@@ -874,7 +859,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long lpush(final String key, final String... values) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.lpush(key, values);
@@ -884,7 +869,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public double zincrby(final String key, final double score, final String member) {
-		return handle(new CommonUtil.Callback<Double>() {
+		return handle(new Callback<Double>() {
 			@Override
 			public Double call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zincrby(key, score, member);
@@ -894,7 +879,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long end) {
-		return handle(new CommonUtil.Callback<Set<Tuple>>() {
+		return handle(new Callback<Set<Tuple>>() {
 			@Override
 			public Set<Tuple> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrevrangeWithScores(key, start, end);
@@ -904,7 +889,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long zrevrank(final String key, final String member) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zrevrank(key, member);
@@ -914,7 +899,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public double zscore(final String key, final String member) {
-		return handle(new CommonUtil.Callback<Double>() {
+		return handle(new Callback<Double>() {
 			@Override
 			public Double call(redis.clients.jedis.Jedis jedis) {
 				return jedis.zscore(key, member);
@@ -924,7 +909,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public List<String> blpop(final int timeout, final String... channels) {
-		return handle(new CommonUtil.Callback<List<String>>() {
+		return handle(new Callback<List<String>>() {
 			@Override
 			public List<String> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.blpop(timeout, channels);
@@ -934,7 +919,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public List<byte[]> blpop(final int timeout, final byte[]... channels) {
-		return handle(new CommonUtil.Callback<List<byte[]>>() {
+		return handle(new Callback<List<byte[]>>() {
 			@Override
 			public List<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.blpop(timeout, channels);
@@ -944,7 +929,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public List<byte[]> hmget(final byte[] key, final byte[]... fields) {
-		return handle(new CommonUtil.Callback<List<byte[]>>() {
+		return handle(new Callback<List<byte[]>>() {
 			@Override
 			public List<byte[]> call(redis.clients.jedis.Jedis jedis) {
 				return jedis.hmget(key, fields);
@@ -976,7 +961,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public void publish(final String topic, final String message) {
-		handle(new CommonUtil.Callback<Void>() {
+		handle(new Callback<Void>() {
 			@Override
 			public Void call(redis.clients.jedis.Jedis jedis) {
 				jedis.publish(topic, message);
@@ -987,7 +972,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public void subscribe(final JedisPubSub jedisPubSub, final String... topic) {
-		handle(new CommonUtil.Callback<Void>() {
+		handle(new Callback<Void>() {
 			@Override
 			public Void call(redis.clients.jedis.Jedis jedis) {
 				jedis.subscribe(jedisPubSub, topic);
@@ -998,7 +983,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long setnx(final String key, final String value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.setnx(key, value);
@@ -1008,7 +993,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long setnx(final byte[] key, final byte[] value) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.setnx(key, value);
@@ -1018,7 +1003,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long ttl(final byte[] key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.ttl(key);
@@ -1028,7 +1013,7 @@ public class Jedis implements IJedis {
 
 	@Override
 	public long ttl(final String key) {
-		return handle(new CommonUtil.Callback<Long>() {
+		return handle(new Callback<Long>() {
 			@Override
 			public Long call(redis.clients.jedis.Jedis jedis) {
 				return jedis.ttl(key);

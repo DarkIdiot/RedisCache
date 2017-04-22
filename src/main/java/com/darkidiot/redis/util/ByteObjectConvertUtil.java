@@ -25,7 +25,7 @@ public final class ByteObjectConvertUtil {
      * @param objBytes
      * @return
      */
-    private static Object getObjectFromBytes(byte[] objBytes) {
+    public static Object getObjectFromBytes(byte[] objBytes) {
         if (objBytes == null || objBytes.length == 0) {
             return null;
         }
@@ -46,7 +46,7 @@ public final class ByteObjectConvertUtil {
      * @param obj
      * @return
      */
-    private static byte[] getBytesFromObject(Object obj) {
+    public static byte[] getBytesFromObject(Object obj) {
         try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
              ObjectOutputStream oo = new ObjectOutputStream(bo)) {
             oo.writeObject(obj);

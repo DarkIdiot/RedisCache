@@ -5,12 +5,14 @@ package com.darkidiot.redis.config;
  *
  * @author darkidiot
  */
-interface RedisPropertyConstants {
+public interface RedisPropertyConstants {
 
     String CONFIG_PROPERTY_NAME = "redis.properties";
 
+    String PKEY_SERVIES = "service.names";
     /** redis 默认服务 */
     String DEFAULT_SERVICE_KEY = "redis";
+    String DEFAULT_GROUP_KEY = "common";
 
     /** properties文件中，与redis配置匹配的代码 */
     String PKEY_IP = "%s.ip";
@@ -64,5 +66,4 @@ interface RedisPropertyConstants {
      * testOnBorrow:在进行borrowObject进行处理时，对拿到的connection进行validateObject校验.
      */
     boolean DEFAULT_TEST_ON_RETURN = false;
-
 }

@@ -1,5 +1,8 @@
 package com.darkidiot.redis.config;
 
+import com.darkidiot.redis.util.StringUtil;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
@@ -8,10 +11,8 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,10 +27,13 @@ public class JedisPoolFactory {
     private static final String WRITE = "WRITE";
     private static HashMap<String, JedisPool> jedisPoolMap = Maps.newHashMap();
 
+    private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
+
     private JedisPoolFactory() {
     }
 
     static {
+        initParam();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
@@ -40,7 +44,6 @@ public class JedisPoolFactory {
                 }
             }
         });
-        initParam();
     }
 
     /**
@@ -54,23 +57,40 @@ public class JedisPoolFactory {
             log.error("failed to load {}, cause by:{}", CONFIG_PROPERTY_NAME, Throwables.getStackTraceAsString(e));
         }
         // TODO: 2017/4/22 配置
+        String services = conf.getProperty(PKEY_SERVIES);
+        if (!StringUtil.isNotEmpty(services)) {
+            log.info("RedisCache get configuration[service.names] -> {}", services);
+            List<String> serviceNames = commaSplitter.splitToList(services);
+            for (String serviceName : serviceNames) {
+                String.format(PKEY_IP, serviceName);
+                String.format(PKEY_PORT, serviceName);
+                String.format(PKEY_IPPORTPWD, serviceName);
+                String.format(PKEY_R$WSEPARATED, serviceName);
+                String.format(PKEY_SENTINEL_MASTER_NAME, serviceName);
+                String.format(PKEY_SENTINEL_HOSTS, serviceName);
+                String.format(PKEY_DB_INDEX, serviceName);
+                String.format(PKEY_PASSWORD, serviceName);
+                String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName);
+                String.format(PKEY_MAX_ACTIVE, serviceName);
+            }
 
+        }
 
     }
 
-    public static JedisPool getReadPool() {
+    public static JedisPool getReadPool(String service) {
         JedisPool readPool = jedisPoolMap.get(READ);
         if (readPool == null) {
-            readPool = getPool(initParam.getIpPortPwd(), READ);
+            readPool = getPool(redisParamMap.get(service).getIpPortPwd(), READ);
             jedisPoolMap.put(READ, readPool);
         }
         return readPool;
     }
 
-    public static JedisPool getWritePool() {
+    public static JedisPool getWritePool(String service) {
         JedisPool writePool = jedisPoolMap.get(WRITE);
         if (writePool == null) {
-            writePool = getPool(initParam.getIpPortPwd(), WRITE);
+            writePool = getPool(redisParamMap.get(service).getIpPortPwd(), WRITE);
             jedisPoolMap.put(WRITE, writePool);
         }
         return writePool;
@@ -101,8 +121,8 @@ public class JedisPoolFactory {
         return new JedisPool(config, ip, port, timeout, password);
     }
 
-    public static RedisInitParam getInitParam() {
-        return initParam;
+    public static RedisInitParam getInitParam(String service) {
+        return redisParamMap.get(service);
     }
 
     private static long getLongWithDefault(Long value, long defaultValue) {

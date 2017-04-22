@@ -1,5 +1,6 @@
 package com.darkidiot.redis.util;
 
+import com.google.common.io.BaseEncoding;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public final class ByteObjectConvertUtil {
      * @param objBytes
      * @return
      */
-    public static Object getObjectFromBytes(byte[] objBytes) {
+    private static Object getObjectFromBytes(byte[] objBytes) {
         if (objBytes == null || objBytes.length == 0) {
             return null;
         }
@@ -45,13 +46,49 @@ public final class ByteObjectConvertUtil {
      * @param obj
      * @return
      */
-    public static byte[] getBytesFromObject(Object obj) {
+    private static byte[] getBytesFromObject(Object obj) {
         try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
              ObjectOutputStream oo = new ObjectOutputStream(bo)) {
             oo.writeObject(obj);
             byte[] byteArray = bo.toByteArray();
             byte[] encode = Base64.getEncoder().encode(byteArray);
             return encode;
+        } catch (Exception e) {
+            log.error("getBytesFromObject error: {}.", e);
+            return null;
+        }
+    }
+
+    /**
+     * string转成object
+     *
+     * @param str
+     * @return
+     */
+    public static Object getObjectFromBytes2(String str) {
+        byte[] decode = BaseEncoding.base16().decode(str);
+
+        try (ByteArrayInputStream bi = new ByteArrayInputStream(decode);
+             ObjectInputStream oi = new ObjectInputStream(bi)) {
+            return oi.readObject();
+        } catch (Exception e) {
+            log.error("getObjectFromBytes error: {}.", e);
+            return null;
+        }
+    }
+
+    /**
+     * object转成String
+     *
+     * @param obj
+     * @return
+     */
+    public static String getBytesFromObject2(Object obj) {
+        try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
+             ObjectOutputStream oo = new ObjectOutputStream(bo)) {
+            oo.writeObject(obj);
+            byte[] byteArray = bo.toByteArray();
+            return BaseEncoding.base16().encode(byteArray);
         } catch (Exception e) {
             log.error("getBytesFromObject error: {}.", e);
             return null;

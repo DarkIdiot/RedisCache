@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Base64;
+//import java.util.Base64;
 
 /**
  * Byte数组与Object之间的转换工具类
@@ -25,20 +25,20 @@ public final class ByteObjectConvertUtil {
      * @param objBytes
      * @return
      */
-    public static Object getObjectFromBytes(byte[] objBytes) {
-        if (objBytes == null || objBytes.length == 0) {
-            return null;
-        }
-        byte[] decode = Base64.getDecoder().decode(objBytes);
-
-        try (ByteArrayInputStream bi = new ByteArrayInputStream(decode);
-             ObjectInputStream oi = new ObjectInputStream(bi)) {
-            return oi.readObject();
-        } catch (Exception e) {
-            log.error("getObjectFromBytes error: {}.", e);
-            return null;
-        }
-    }
+//    private static Object getObjectFromBytes(byte[] objBytes) {
+//        if (objBytes == null || objBytes.length == 0) {
+//            return null;
+//        }
+//        byte[] decode = Base64.getDecoder().decode(objBytes);
+//
+//        try (ByteArrayInputStream bi = new ByteArrayInputStream(decode);
+//             ObjectInputStream oi = new ObjectInputStream(bi)) {
+//            return oi.readObject();
+//        } catch (Exception e) {
+//            log.error("getObjectFromBytes error: {}.", e);
+//            return null;
+//        }
+//    }
 
     /**
      * object转成byte[]数组
@@ -46,18 +46,18 @@ public final class ByteObjectConvertUtil {
      * @param obj
      * @return
      */
-    public static byte[] getBytesFromObject(Object obj) {
-        try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
-             ObjectOutputStream oo = new ObjectOutputStream(bo)) {
-            oo.writeObject(obj);
-            byte[] byteArray = bo.toByteArray();
-            byte[] encode = Base64.getEncoder().encode(byteArray);
-            return encode;
-        } catch (Exception e) {
-            log.error("getBytesFromObject error: {}.", e);
-            return null;
-        }
-    }
+//    private static byte[] getBytesFromObject2(Object obj) {
+//        try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
+//             ObjectOutputStream oo = new ObjectOutputStream(bo)) {
+//            oo.writeObject(obj);
+//            byte[] byteArray = bo.toByteArray();
+//            byte[] encode = Base64.getEncoder().encode(byteArray);
+//            return encode;
+//        } catch (Exception e) {
+//            log.error("getBytesFromObject error: {}.", e);
+//            return null;
+//        }
+//    }
 
     /**
      * string转成object
@@ -65,7 +65,7 @@ public final class ByteObjectConvertUtil {
      * @param str
      * @return
      */
-    public static Object getObjectFromBytes2(String str) {
+    public static Object getObjectFromBytes(String str) {
         byte[] decode = BaseEncoding.base16().decode(str);
 
         try (ByteArrayInputStream bi = new ByteArrayInputStream(decode);
@@ -83,7 +83,7 @@ public final class ByteObjectConvertUtil {
      * @param obj
      * @return
      */
-    public static String getBytesFromObject2(Object obj) {
+    public static String getBytesFromObject(Object obj) {
         try (ByteArrayOutputStream bo = new ByteArrayOutputStream();
              ObjectOutputStream oo = new ObjectOutputStream(bo)) {
             oo.writeObject(obj);

@@ -4,209 +4,211 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.darkidiot.redis.config.RedisInitParam;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Tuple;
 
 /**
  * Redis缓存公共接口
- * 
+ *
  * @author darkidiot
  */
 public interface IJedis {
-	/**
-	 * 发布
-	 * 
-	 * @param topic
-	 *            主题
-	 * @param message
-	 *            消息
-	 */
-	void publish(String topic, String message);
 
-	/**
-	 * 订阅
-	 * 
-	 * @param jedisPubSub
-	 * @param topic
-	 */
-	void subscribe(JedisPubSub jedisPubSub, String... topic);
+    RedisInitParam baseConfig();
 
-	Set<Tuple> zrangeWithScores(byte[] key, int offset, int len);
+    /**
+     * 发布
+     *
+     * @param topic   主题
+     * @param message 消息
+     */
+    void publish(String topic, String message);
 
-	byte[] get(byte[] key);
+    /**
+     * 订阅
+     *
+     * @param jedisPubSub
+     * @param topic
+     */
+    void subscribe(JedisPubSub jedisPubSub, String... topic);
 
-	String get(String key);
+    Set<Tuple> zrangeWithScores(byte[] key, int offset, int len);
 
-	boolean zadd(byte[] key, double score, byte[] value);
+    byte[] get(byte[] key);
 
-	boolean zadd(String key, double score, String value);
+    String get(String key);
 
-	boolean zadd(byte[] key, Map<byte[], Double> scoreMembers);
+    boolean zadd(byte[] key, double score, byte[] value);
 
-	boolean zrem(byte[] key, byte[] value);
+    boolean zadd(String key, double score, String value);
 
-	Set<Tuple> zrevrangeWithScores(byte[] key, int start, int end);
+    boolean zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
-	double zscore(byte[] key, byte[] value);
+    boolean zrem(byte[] key, byte[] value);
 
-	// include min and max
-	Set<byte[]> zrangeByScore(byte[] key, double min, double max);
+    Set<Tuple> zrevrangeWithScores(byte[] key, int start, int end);
 
-	String set(byte[] key, byte[] value);
+    double zscore(byte[] key, byte[] value);
 
-	String set(String key, long value);
+    // include min and max
+    Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-	long incr(byte[] key);
+    String set(byte[] key, byte[] value);
 
-	long incr(String key);
+    String set(String key, long value);
 
-	long incrBy(byte[] key, long value);
+    long incr(byte[] key);
 
-	long incrBy(String key, long value);
+    long incr(String key);
 
-	long decr(byte[] key);
+    long incrBy(byte[] key, long value);
 
-	long decr(String key);
+    long incrBy(String key, long value);
 
-	long decrBy(byte[] key, long value);
+    long decr(byte[] key);
 
-	long decrBy(String key, long value);
+    long decr(String key);
 
-	Set<byte[]> keys(byte[] pattern);
+    long decrBy(byte[] key, long value);
 
-	long zcard(byte[] key);
+    long decrBy(String key, long value);
 
-	long zremrangeByRank(byte[] key, int offset, int len);
+    Set<byte[]> keys(byte[] pattern);
 
-	long zremrangeByRankV2(byte[] key, int start, int end);
+    long zcard(byte[] key);
 
-	long zremrangeByScore(byte[] key, int start, int end);
+    long zremrangeByRank(byte[] key, int offset, int len);
 
-	String info();
+    long zremrangeByRankV2(byte[] key, int start, int end);
 
-	String hget(String key, String field);
+    long zremrangeByScore(byte[] key, int start, int end);
 
-	byte[] hget(byte[] key, byte[] field);
+    String info();
 
-	long hset(String key, String field, String value);
+    String hget(String key, String field);
 
-	long hset(byte[] key, byte[] field, byte[] value);
+    byte[] hget(byte[] key, byte[] field);
 
-	long hdel(String key, String field);
+    long hset(String key, String field, String value);
 
-	long hdel(byte[] key, byte[] field);
+    long hset(byte[] key, byte[] field, byte[] value);
 
-	Map<String, String> hgetAll(String key);
+    long hdel(String key, String field);
 
-	long expire(String key, int seconds);
+    long hdel(byte[] key, byte[] field);
 
-	long del(String key);
+    Map<String, String> hgetAll(String key);
 
-	long del(byte[] key);
+    long expire(String key, int seconds);
 
-	long expire(byte[] key, int seconds);
+    long del(String key);
 
-	long linsert(String key, boolean where, String pivot, String value);
+    long del(byte[] key);
 
-	long lpush(String key, String value);
+    long expire(byte[] key, int seconds);
 
-	long rpush(String key, String value);
+    long linsert(String key, boolean where, String pivot, String value);
 
-	String ltrim(String key, long start, long end);
+    long lpush(String key, String value);
 
-	List<String> lrange(String key, long start, long end);
+    long rpush(String key, String value);
 
-	String lindex(String key, int index);
+    String ltrim(String key, long start, long end);
 
-	long llen(String key);
+    List<String> lrange(String key, long start, long end);
 
-	long lrem(String key, int count, String value);
+    String lindex(String key, int index);
 
-	String rpop(String key);
+    long llen(String key);
 
-	byte[] rpop(byte[] key);
+    long lrem(String key, int count, String value);
 
-	long lpush(byte[] key, byte[] string);
+    String rpop(String key);
 
-	List<byte[]> lrange(byte[] key, int start, int end);
+    byte[] rpop(byte[] key);
 
-	byte[] lpop(byte[] key);
+    long lpush(byte[] key, byte[] string);
 
-	String lpop(String key);
+    List<byte[]> lrange(byte[] key, int start, int end);
 
-	long llen(byte[] key);
+    byte[] lpop(byte[] key);
 
-	long lrem(byte[] key, int count, byte[] value);
+    String lpop(String key);
 
-	String ltrim(byte[] key, int start, int end);
+    long llen(byte[] key);
 
-	long rpush(byte[] key, byte[] string);
+    long lrem(byte[] key, int count, byte[] value);
 
-	long sadd(final String key, final String... members);
+    String ltrim(byte[] key, int start, int end);
 
-	long sadd(final byte[] key, final byte[]... members);
+    long rpush(byte[] key, byte[] string);
 
-	long srem(final byte[] key, final byte[]... members);
+    long sadd(final String key, final String... members);
 
-	long srem(final String key, final String... members);
+    long sadd(final byte[] key, final byte[]... members);
 
-	Set<byte[]> smembers(byte[] key);
+    long srem(final byte[] key, final byte[]... members);
 
-	Set<String> smembers(String key);
+    long srem(final String key, final String... members);
 
-	long scard(byte[] key);
+    Set<byte[]> smembers(byte[] key);
 
-	long scard(String key);
+    Set<String> smembers(String key);
 
-	boolean sismember(String key, String member);
+    long scard(byte[] key);
 
-	boolean sismember(byte[] key, byte[] member);
+    long scard(String key);
 
-	Map<byte[], byte[]> hgetAll(byte[] key);
+    boolean sismember(String key, String member);
 
-	List<byte[]> hmget(byte[] key, byte[]... fields);
+    boolean sismember(byte[] key, byte[] member);
 
-	List<? extends Object> hmget(Object key, List<? extends Object> fields);
+    Map<byte[], byte[]> hgetAll(byte[] key);
 
-	long hincrBy(String key, String field, long value);
+    List<byte[]> hmget(byte[] key, byte[]... fields);
 
-	boolean exists(byte[] key);
+    List<? extends Object> hmget(Object key, List<? extends Object> fields);
 
-	String rename(byte[] oldkey, byte[] newkey);
+    long hincrBy(String key, String field, long value);
 
-	long renamenx(byte[] oldkey, byte[] newkey);
+    boolean exists(byte[] key);
 
-	long zunion(String dstkey, String... sets);
+    String rename(byte[] oldkey, byte[] newkey);
 
-	Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
+    long renamenx(byte[] oldkey, byte[] newkey);
 
-	boolean hexists(String key, String field);
+    long zunion(String dstkey, String... sets);
 
-	boolean hexists(byte[] key, byte[] field);
+    Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
-	boolean exists(String key);
+    boolean hexists(String key, String field);
 
-	String set(String key, String value);
+    boolean hexists(byte[] key, byte[] field);
 
-	long lpush(String key, String... values);
+    boolean exists(String key);
 
-	double zincrby(String key, double score, String member);
+    String set(String key, String value);
 
-	long zrevrank(String key, String member);
+    long lpush(String key, String... values);
 
-	Set<Tuple> zrevrangeWithScores(String key, long start, long end);
+    double zincrby(String key, double score, String member);
 
-	double zscore(String key, String member);
+    long zrevrank(String key, String member);
 
-	List<String> blpop(int timeout, String... channels);
+    Set<Tuple> zrevrangeWithScores(String key, long start, long end);
 
-	List<byte[]> blpop(int timeout, byte[]... channels);
+    double zscore(String key, String member);
 
-	long setnx(final String key, final String value);
+    List<String> blpop(int timeout, String... channels);
 
-	long setnx(final byte[] key, final byte[] value);
+    List<byte[]> blpop(int timeout, byte[]... channels);
 
-	long ttl(final byte[] key);
+    long setnx(final String key, final String value);
 
-	long ttl(final String key);
+    long setnx(final byte[] key, final byte[] value);
+
+    long ttl(final byte[] key);
+
+    long ttl(final String key);
 }

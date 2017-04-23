@@ -1,26 +1,23 @@
 package com.darkidiot.redis.queue.impl;
 
-import static com.darkidiot.redis.queue.impl.Constants.createKey;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.darkidiot.redis.queue.Queue;
-import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
+import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
-
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisException;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 /**
  * 完美的多优先级支持队列(采用单个队列，每个元素赋予一个Score并按照Score排序得到一个优先级队列)
  *  Notice: 由于Sorted Set本身是一个set，因此消息队列中的消息不能重复，否则新加入的消息会覆盖以前加入的任务.

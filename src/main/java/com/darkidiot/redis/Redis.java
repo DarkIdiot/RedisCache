@@ -26,30 +26,29 @@ public class Redis {
      * @return
      */
     public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use(String service, String groupName) {
-        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service));
+        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
         return new RedisMapProxy<>(groupName, jedis);
     }
 
     /**
      * 获取缓存接口.Note:需默认redis配置。
+     *
      * @param groupName(必传,每一块缓存的唯一标志)
      * @return
      */
     public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use(String groupName) {
         String service = RedisPropertyConstants.DEFAULT_SERVICE_KEY;
-        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service));
-        return new RedisMapProxy<>(groupName, jedis);
+        return use(service,groupName);
     }
 
     /**
      * 获取缓存接口.Note:需默认redis配置。
+     *
      * @return
      */
     public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use() {
-        String service = RedisPropertyConstants.DEFAULT_SERVICE_KEY;
         String groupName = RedisPropertyConstants.DEFAULT_GROUP_KEY;
-        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service));
-        return new RedisMapProxy<>(groupName, jedis);
+        return use(groupName);
     }
 
 

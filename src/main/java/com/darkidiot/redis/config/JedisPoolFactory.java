@@ -2,6 +2,7 @@ package com.darkidiot.redis.config;
 
 import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.util.StringUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -30,7 +31,7 @@ public class JedisPoolFactory {
 
     private static Map<String, RedisInitParam> redisParamMap = Maps.newHashMap();
 
-    private static HashMap<String, Pool> poolMap = Maps.newHashMap();
+    private static HashMap<String, Pool<redis.clients.jedis.Jedis>> poolMap = Maps.newHashMap();
 
     private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
 
@@ -42,7 +43,7 @@ public class JedisPoolFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
-                for (Entry<String, Pool> entry : poolMap.entrySet()) {
+                for (Entry<String, Pool<redis.clients.jedis.Jedis>> entry : poolMap.entrySet()) {
                     Pool pool = entry.getValue();
                     log.info("The JedisPool: {} will be destroyed.", pool);
                     pool.destroy();

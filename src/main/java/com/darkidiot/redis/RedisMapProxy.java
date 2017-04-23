@@ -1,14 +1,13 @@
 package com.darkidiot.redis;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.darkidiot.redis.common.Method;
-import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.subpub.LocalCacheSynchronizedCenter;
 import com.darkidiot.redis.validate.KeyValidation;
 import com.darkidiot.redis.validate.NopValidation;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Redis 缓存代理类(封装本地缓存操作)
@@ -33,7 +32,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
 
     public RedisMapProxy(String name, IJedis jedis, int localCacheExpire) {
         this.redisCache = new RedisMap<>(name, jedis);
-        openLocalCacheFlag = JedisPoolFactory.getInitParam().getOpenLocalCache();
+        openLocalCacheFlag = jedis.baseConfig().getOpenLocalCache();
         if (openLocalCacheFlag) {
             this.localCache = new LocalMap<>(name, localCacheExpire);
             LocalCacheSynchronizedCenter.subscribe((LocalMap<String, ? extends Serializable>) localCache);
@@ -41,12 +40,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     }
 
     public RedisMapProxy(String name, IJedis jedis) {
-        this.redisCache = new RedisMap<>(name, jedis);
-        openLocalCacheFlag = JedisPoolFactory.getInitParam().getOpenLocalCache();
-        if (openLocalCacheFlag) {
-            this.localCache = new LocalMap<>(name, expire);
-            LocalCacheSynchronizedCenter.subscribe((LocalMap<String, ? extends Serializable>) localCache);
-        }
+        this(name,jedis,expire);
     }
 
     @Override

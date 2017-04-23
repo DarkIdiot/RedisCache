@@ -43,7 +43,7 @@ public class QueueTest {
         resource.del("Queue:Simple Fifo Queue");
         resource.close();
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<Person>("Simple Fifo Queue", pool);
+        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -65,7 +65,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue2() {
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<Person>("Simple Fifo Queue", pool);
+        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -86,7 +86,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue3() {
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<Person>("Simple Fifo Queue", pool);
+        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -107,7 +107,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue4() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<String>("Simple Fifo Queue", pool);
+        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -128,7 +128,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue5() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<String>("Simple Fifo Queue", pool);
+        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -149,7 +149,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue6() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<String>("Simple Fifo Queue", pool);
+        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -178,7 +178,7 @@ public class QueueTest {
         resource.del("Queue:Highly Priority Queue:Simple Priority Queue");
         resource.close();
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(2 * n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -206,7 +206,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -227,7 +227,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue3() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -248,7 +248,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue4() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -269,7 +269,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue5() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -290,7 +290,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue6() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<Person>("Simple Priority Queue", pool);
+        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -322,7 +322,7 @@ public class QueueTest {
         }
         resource.del(list.toArray(new String[list.size()]));
         resource.close();
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -345,7 +345,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -366,7 +366,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue3() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -387,7 +387,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue4() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -408,7 +408,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue5() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -429,7 +429,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue6() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<Person>("Rough Priority Queue", pool);
+        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -457,7 +457,7 @@ public class QueueTest {
         Jedis resource = pool.getResource();
         resource.del("Queue:Perfect Priority Queue");
         resource.close();
-        Queue<String> queue = new PerfectPriorityQueue<String>("Perfect Priority Queue", pool);
+        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -482,7 +482,7 @@ public class QueueTest {
         Jedis resource = pool.getResource();
         resource.del("Queue:Perfect Priority Queue");
         resource.close();
-        Queue<Person> queue = new PerfectPriorityQueue<Person>("Perfect Priority Queue", pool);
+        Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -504,7 +504,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new PerfectPriorityQueue<Person>("Perfect Priority Queue", pool);
+        Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -525,7 +525,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue3() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<String>("Perfect Priority Queue", pool);
+        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -546,7 +546,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue4() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<String>("Perfect Priority Queue", pool);
+        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -567,7 +567,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue5() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<String>("Perfect Priority Queue", pool);
+        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -588,7 +588,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue6() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<String>("Perfect Priority Queue", pool);
+        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
         CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -608,20 +608,7 @@ public class QueueTest {
 
 
     private void shutdownHook(String name, String method, long spendTime) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info(name + " " + method + " spend time " + spendTime + "ms for " + testCount + " Thread.");
-        }));
-    }
-
-    @Test
-    public void testSerializable() {
-        Person person = new Person("Tom");
-        byte[] bytes = ByteObjectConvertUtil.getBytesFromObject(person);
-        log.info(Arrays.toString(bytes));
-        byte[] encode = Base64.getEncoder().encode(bytes);
-        log.info(Arrays.toString(encode));
-        log.info(ByteObjectConvertUtil.getObjectFromBytes(Base64.getDecoder().decode(encode)).toString());
-
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> log.info(name + " " + method + " spend time " + spendTime + "ms for " + testCount + " Thread.")));
     }
 
     @AfterClass

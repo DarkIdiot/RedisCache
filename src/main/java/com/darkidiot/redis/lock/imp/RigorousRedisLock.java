@@ -11,46 +11,49 @@ import com.darkidiot.redis.util.UUIDUtil;
 
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
+
 /**
- *  严格的分布式锁的实现(超级超级严格)
+ * 严格的分布式锁的实现(超级超级严格)
+ *
  * @author darkidiot
  */
 @Slf4j
 public class RigorousRedisLock implements Lock {
 
-	private static int MAX_SUPPORT_THREAD_COUNT = 5;
+    private static int MAX_SUPPORT_THREAD_COUNT = 5;
 
-	JedisPool jedisPool;
-	String name;
-	Semaphore semaphore;
-	public RigorousRedisLock(JedisPool jedisPool,String name) throws RedisException {
-		if (jedisPool == null) {
-			throw new RedisException("Initialize RigorousRedisLock failure, And jedisPool can not be null.");
-		}
-		if (StringUtil.isEmpty(name)) {
-			throw new RedisException("Initialize RigorousRedisLock failure, And name can not be empty.");
-		}
-		this.jedisPool = jedisPool;
-		this.name = name;
-		this.semaphore = new Semaphore(MAX_SUPPORT_THREAD_COUNT,true);
-	}
+    private Pool pool;
+    private String name;
+    private Semaphore semaphore;
 
-	@Override
-	public String lock(final long acquireTimeout,final long lockTimeout) throws RedisException {
-		if (acquireTimeout < 0 || lockTimeout < -1) {
-			throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
-		}
-		final String value = UUIDUtil.generateShortUUID();
-		final String lockKey = Constants.createKey(this.name);
-		final int lockExpire = (int) (lockTimeout);
+    public RigorousRedisLock(Pool pool, String name) throws RedisException {
+        if (pool == null) {
+            throw new RedisException("Initialize RigorousRedisLock failure, And pool can not be null.");
+        }
+        if (StringUtil.isEmpty(name)) {
+            throw new RedisException("Initialize RigorousRedisLock failure, And name can not be empty.");
+        }
+        this.pool = pool;
+        this.name = name;
+        this.semaphore = new Semaphore(MAX_SUPPORT_THREAD_COUNT, true);
+    }
+
+    @Override
+    public String lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
+        if (acquireTimeout < 0 || lockTimeout < -1) {
+            throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
+        }
+        final String value = UUIDUtil.generateShortUUID();
+        final String lockKey = Constants.createKey(this.name);
+        final int lockExpire = (int) (lockTimeout);
         try {
-        	semaphore.acquire();
-        	return CommonUtil.invoke(new CommonUtil.Callback<String>() {
-        		@Override
-        		public String call(Jedis jedis) {
+            semaphore.acquire();
+            return CommonUtil.invoke(new CommonUtil.Callback<String>() {
+                @Override
+                public String call(Jedis jedis) {
                     long end = System.currentTimeMillis() + acquireTimeout;
                     int i = 1;
                     while (true) {
@@ -72,76 +75,75 @@ public class RigorousRedisLock implements Lock {
                             Thread.currentThread().interrupt();
                         }
                         if (System.currentTimeMillis() > end) {
-                        	log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-        				}
+                            log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                        }
                     }
-        		}
-        	}, jedisPool);
+                }
+            }, pool);
         } catch (JedisException e) {
-        	return null;
+            return null;
         } catch (InterruptedException e) {
-        	return null;
-		}finally {
-			semaphore.release();
-		}
-	}
-
-	@Override
-	public String lock() throws RedisException {
-		return lock(Constants.defaultAcquireLockTimeout, Constants.defaultLockTimeout);
-	}
-
-	@Override
-	public boolean unlock(final String identifier) throws RedisException {
-		if (StringUtil.isEmpty(identifier)) {
-			throw new RedisException("identifier can not be empty.");
-		}
-		final String lockKey = Constants.createKey(this.name);
-		try{
-			return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-				@Override
-				public Boolean call(Jedis jedis) {
-					long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-					if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
-						if (System.currentTimeMillis() > end) {
-							log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-						}
-						return true;
-					}
-					return false;
-				}
-			}, jedisPool);
-        } catch (JedisException je) {
-        	return false;
+            return null;
+        } finally {
+            semaphore.release();
         }
-	}
+    }
 
-	@Override
-	public boolean isLocking(String identifier) throws RedisException {
-		if (StringUtil.isEmpty(identifier)) {
-			throw new RedisException("identifier can not be empty.");
-		}
-		final String lockKey = Constants.createKey(this.name);
-		try{
-			return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-				@Override
-				public Boolean call(Jedis jedis) {
-					long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
-					String retStr = null;
-					retStr = jedis.get(lockKey);
-					if (System.currentTimeMillis() > end) {
-						log.warn("Checking RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-					}
-					return retStr != null && !retStr.equals(Constants.LOCK_UNLOCK);
-				}
-			}, jedisPool);
-		} catch (JedisException je) {
-	    	return false;
-	    }
-	}
+    @Override
+    public String lock() throws RedisException {
+        return lock(Constants.defaultAcquireLockTimeout, Constants.defaultLockTimeout);
+    }
 
-	@Override
-	public String getName() throws RedisException {
-		return name;
-	}
+    @Override
+    public boolean unlock(final String identifier) throws RedisException {
+        if (StringUtil.isEmpty(identifier)) {
+            throw new RedisException("identifier can not be empty.");
+        }
+        final String lockKey = Constants.createKey(this.name);
+        try {
+            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
+                @Override
+                public Boolean call(Jedis jedis) {
+                    long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
+                    if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
+                        if (System.currentTimeMillis() > end) {
+                            log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            }, pool);
+        } catch (JedisException je) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isLocking(String identifier) throws RedisException {
+        if (StringUtil.isEmpty(identifier)) {
+            throw new RedisException("identifier can not be empty.");
+        }
+        final String lockKey = Constants.createKey(this.name);
+        try {
+            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
+                @Override
+                public Boolean call(Jedis jedis) {
+                    long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
+                    String retStr = jedis.get(lockKey);
+                    if (System.currentTimeMillis() > end) {
+                        log.warn("Checking RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                    }
+                    return retStr != null && !retStr.equals(Constants.LOCK_UNLOCK);
+                }
+            }, pool);
+        } catch (JedisException je) {
+            return false;
+        }
+    }
+
+    @Override
+    public String getName() throws RedisException {
+        return name;
+    }
 }

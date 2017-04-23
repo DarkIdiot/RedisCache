@@ -4,17 +4,16 @@ import com.darkidiot.redis.LocalMap;
 import com.darkidiot.redis.common.Method;
 import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.config.JedisPoolFactory;
+import com.darkidiot.redis.config.RedisInitParam;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.UUIDUtil;
 import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -45,24 +44,30 @@ public class LocalCacheSynchronizedCenter {
 
     /** 服务开启就开启本地缓存同步策略  */
     static {
-        ExecutorService executorService = Executors.newFixedThreadPool(30);
-        for (int i = 0; i < JedisPoolFactory.getInitParam().getSubscribeThreadNum(); i++) {
-            LocalCacheSynchronizedCenterThread cacheSynchronizedCenterThread = new LocalCacheSynchronizedCenterThread();
-            executorService.execute(cacheSynchronizedCenterThread);
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                @Override
-                public void run() {
-                    // 销毁订阅线程
-                    LocalCacheSynchronizedCenterThread.flag = false;
-                    try {
-                        cacheSynchronizedCenterThread.interrupt();
-                        cacheSynchronizedCenterThread.join();
-                        log.error("Thread-{}-{}  was closed", cacheSynchronizedCenterThread.getName(), cacheSynchronizedCenterThread.getId());
-                    } catch (InterruptedException e) {
-                        log.error("Thread was Interrupted, cause by:{}", Throwables.getStackTraceAsString(e));
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        Map<String, RedisInitParam> redisInitParamMap = JedisPoolFactory.getredisParamMap();
+
+        for (Map.Entry<String, RedisInitParam> entry : redisInitParamMap.entrySet()) {
+            String key = entry.getKey();
+            RedisInitParam value = entry.getValue();
+            for (int i = 0; i < value.getSubscribeThreadNum(); i++) {
+                final LocalCacheSynchronizedCenterThread cacheSynchronizedCenterThread = new LocalCacheSynchronizedCenterThread(key);
+                executorService.execute(cacheSynchronizedCenterThread);
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+                    @Override
+                    public void run() {
+                        // 销毁订阅线程
+                        LocalCacheSynchronizedCenterThread.flag = false;
+                        try {
+                            cacheSynchronizedCenterThread.interrupt();
+                            cacheSynchronizedCenterThread.join();
+                            log.error("Thread-{}-{}  was closed", cacheSynchronizedCenterThread.getName(), cacheSynchronizedCenterThread.getId());
+                        } catch (InterruptedException e) {
+                            log.error("Thread was Interrupted, cause by:{}", Throwables.getStackTraceAsString(e));
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -111,13 +116,14 @@ public class LocalCacheSynchronizedCenter {
     /**
      * 发布消息
      *
+     * @param service   服务名称
      * @param groupName Map名称
      * @param method    方法名称
      * @param key       键值
      */
-    public static <K extends Serializable> void publish(String groupName, Method method, K key) {
-        try (Jedis jedis = JedisPoolFactory.getWritePool().getResource()) {
-            MsgVo msg = new MsgVo(CLIENT_ID, IPorServerConfig.getServerId(), method, groupName, ByteObjectConvertUtil.getBytesFromObject2(key));
+    public static <K extends Serializable> void publish(String service, String groupName, Method method, K key) {
+        try (Jedis jedis = (Jedis) JedisPoolFactory.getWritePool(service).getResource()) {
+            MsgVo msg = new MsgVo(CLIENT_ID, IPorServerConfig.getServerId(service), method, groupName, ByteObjectConvertUtil.getBytesFromObject(key));
             String json = gson.toJson(msg);
             jedis.publish(TOPIC_SYNCHRONIZED_LOCAL_CACHE, json);
             log.info("local cache publish message:{} ", json);
@@ -132,10 +138,12 @@ public class LocalCacheSynchronizedCenter {
     private static class LocalCacheSynchronizedCenterThread extends Thread {
 
         static volatile boolean flag = true;
+        private String serviceName;
 
-        LocalCacheSynchronizedCenterThread() {
+        LocalCacheSynchronizedCenterThread(String serviceName) {
             this.setName("RedisMap subscribe " + TOPIC_SYNCHRONIZED_LOCAL_CACHE + " " + LOCAL_CACHES.size());
             this.setDaemon(true);
+            this.serviceName = serviceName;
         }
 
         @Override
@@ -153,7 +161,7 @@ public class LocalCacheSynchronizedCenter {
          * 订阅消息
          */
         private void subscribe() throws InterruptedException {
-            try (Jedis jedis = JedisPoolFactory.getWritePool().getResource()) {
+            try (Jedis jedis = (Jedis) JedisPoolFactory.getWritePool(serviceName).getResource()) {
                 log.info("RedisMap subscribe start... ");
                 log.info("TOPIC:{},local_cache size:{}", LOCAL_CACHES.size());
                 jedis.subscribe(new AbstractJedisPubSub() {

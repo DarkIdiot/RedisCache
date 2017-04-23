@@ -19,8 +19,8 @@ import com.darkidiot.redis.util.StringUtil;
 
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.util.Pool;
 
 /**
  * 简单先进先出队列(采用单队列模式实现,不支持优先级)
@@ -31,18 +31,18 @@ import redis.clients.jedis.exceptions.JedisException;
 @SuppressWarnings("unchecked")
 public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 
-	String name;
-	JedisPool jedisPool;
+	private String name;
+	private Pool pool;
 
-	public SimpleFifoQueue(String name, JedisPool jedisPool) throws RedisException {
-		if (jedisPool == null) {
-			throw new RedisException("Initialize SimpleFifoQueue failure, And jedisPool can not be null.");
+	public SimpleFifoQueue(String name, Pool pool) throws RedisException {
+		if (pool == null) {
+			throw new RedisException("Initialize SimpleFifoQueue failure, And pool can not be null.");
 		}
 		if (StringUtil.isEmpty(name)) {
 			throw new RedisException("Initialize SimpleFifoQueue failure, And name can not be empty.");
 		}
 		this.name = name;
-		this.jedisPool = jedisPool;
+		this.pool = pool;
 	}
 
 	@Override
@@ -55,12 +55,12 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 				@Override
 				public Boolean call(Jedis jedis) {
 					long end = System.currentTimeMillis() + defaultEnqueueTimeout;
-					long retNum = jedis.lpush(createKey(name).getBytes(), ByteObjectConvertUtil.getBytesFromObject(members));
+					long retNum = jedis.lpush(createKey(name), ByteObjectConvertUtil.getBytesFromObject(members));
 					if (System.currentTimeMillis() > end) {
 						log.warn("Enqueue SimpleFifoQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
 					}
 					return retNum > 0;	
-			}}, jedisPool);
+			}}, pool);
 		} catch (JedisException jedisException) {
 			return false;
 		}
@@ -85,11 +85,11 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 					}
 					String retStr = retList.get(1);
 					if (StringUtil.isNotEmpty(retStr)) {
-						Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(retStr.getBytes());
+						Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(retStr);
 						return (T) objects[0];
 					}
 					return null;
-			}}, jedisPool);
+			}}, pool);
 		} catch (JedisException jedisException) {
 			return null;
 		} 
@@ -107,11 +107,11 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 						log.warn("Top SimpleFifoQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
 					}
 					if (StringUtil.isNotEmpty(top)) {
-						Object[] objectFromBytes = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(top.getBytes());
+						Object[] objectFromBytes = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(top);
 						return (T) objectFromBytes[0];
 					}
 					return null;
-			}}, jedisPool);
+			}}, pool);
 		} catch (JedisException jedisException) {
 			return null;
 		}
@@ -129,7 +129,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 						log.warn("Query SimpleFifoQueue size time out. spend[ {}ms ]", System.currentTimeMillis() - end);
 					}
 					return size;
-			}}, jedisPool);
+			}}, pool);
 		} catch (JedisException jedisException) {
 			return -1L;
 		}
@@ -157,7 +157,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 						log.warn("Clear SimpleFifoQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
 					}
 					return delNum == 1 || delNum == 0;
-			}}, jedisPool);
+			}}, pool);
 		} catch (JedisException jedisException) {
 			return false;
 		}

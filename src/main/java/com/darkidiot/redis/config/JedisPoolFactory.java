@@ -2,7 +2,6 @@ package com.darkidiot.redis.config;
 
 import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.exception.RedisException;
-import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.util.StringUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -402,6 +401,10 @@ public class JedisPoolFactory {
 
     public static RedisInitParam getInitParam(String service) {
         return redisParamMap.get(service);
+    }
+
+    public static Map<String, RedisInitParam> getredisParamMap() {
+        return redisParamMap;
     }
 
     private static long getLongWithDefault(Long value, long defaultValue) {

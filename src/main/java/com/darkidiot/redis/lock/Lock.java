@@ -16,7 +16,7 @@ public interface Lock {
 	 * @param lockTimeout 锁的超时时间(秒)(-1: for never expired)
 	 * @return identifier 
 	 */
-	public String lock(long acquireTimeout, long lockTimeout) throws RedisException;
+    String lock(long acquireTimeout, long lockTimeout) throws RedisException;
 	
 	/**
 	 * 加锁(acquireTimeout:默认10秒,lockTimeout:默认50秒)
@@ -29,16 +29,16 @@ public interface Lock {
 	 * @param identifier 释放锁标识
 	 * @return true|false : false is for unlock operation to release lock. 
 	 */
-	public boolean unlock(String identifier) throws RedisException;
+    boolean unlock(String identifier) throws RedisException;
 	
 	/**
 	 * 判断是否加锁成功 
 	 * @param identifier
 	 */
-	public boolean isLocking(String identifier) throws RedisException;
+    boolean isLocking(String identifier) throws RedisException;
 	
 	/**
 	 * 获取当前锁的名称
 	 */
-	public String getName() throws RedisException;
+    String getName() throws RedisException;
 }

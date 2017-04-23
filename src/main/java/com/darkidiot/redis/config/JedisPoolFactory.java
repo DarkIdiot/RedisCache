@@ -357,7 +357,7 @@ public class JedisPoolFactory {
         } else {
             String ipPortPwd = initParam.getIpPortPwd();
             String redisHost = initParam.getIp();
-            int redisPort = initParam.getPort();
+            Integer redisPort = initParam.getPort();
             String password = initParam.getPassword();
 
             if (StringUtil.isNotEmpty(ipPortPwd)) {
@@ -370,6 +370,16 @@ public class JedisPoolFactory {
                 redisPort = Integer.parseInt(matcher.group(2));
                 password = matcher.group(3);
             }
+
+            if (StringUtil.isEmpty(redisHost)) {
+                log.warn("Redis standalone configure failure. Cause by not find ip, and use the default value:[{}].", DEFAULT_IP);
+                redisHost = DEFAULT_IP;
+            }
+            if (redisPort == null) {
+                log.warn("Redis standalone configure failure. Cause by not find port, and use the default value:[{}]", DEFAULT_PORT);
+                redisPort = DEFAULT_PORT;
+            }
+
             int dbIndex = getIntWithDefault(initParam.getDbIndex(), DEFAULT_DB_INDEX);
             boolean testOnBorrow = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnBorrowR() : initParam.getTestOnBorrowW(), DEFAULT_TEST_ON_BORROW);
             boolean testOnReturn = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnReturnR() : initParam.getTestOnReturnW(), DEFAULT_TEST_ON_RETURN);

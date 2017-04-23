@@ -57,27 +57,21 @@ public interface RedisPropertyConstants {
     String PKEY_TEST_ON_RETURN = "%s.testOnReturn";
 
     /** 文件中ip:port?password正则表达式 */
-    String IP_PORT_PASSWORD = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\:(\\d+)\\?([a-zA-Z0-9]+)";
+    String IP_PORT_PASSWORD = "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3})\\:(\\d+)\\?([a-zA-Z0-9]*)";
 
 
 
     //默认属性配置
-
     String DEFAULT_IP = "127.0.0.1";
     int DEFAULT_PORT = 6379;
-    int DEFAULT_TIMEOUT = 10;
-    int DEFAULT_MAX_IDLE = 100;
-    int DEFAULT_MAX_ACTIVE = 200;
-    int DEFAULT_MAX_WAIT = 10000;
+
     int DEFAULT_DB_INDEX = 0;
+
     boolean DEFAULT_IS_CLUSTER = false;
     boolean DEFAULT_R$W_SEPARATED =true;
-    /**
-     * testOnReturn:在进行returnObject对返回的connection进行validateObject校验.
-     */
+    int DEFAULT_TIMEOUT = 2000;
+    int DEFAULT_MAX_IDLE = 8;
+    int DEFAULT_MAX_WAIT = 10000;
     boolean DEFAULT_TEST_ON_BORROW = false;
-    /**
-     * testOnBorrow:在进行borrowObject进行处理时，对拿到的connection进行validateObject校验.
-     */
     boolean DEFAULT_TEST_ON_RETURN = false;
 }

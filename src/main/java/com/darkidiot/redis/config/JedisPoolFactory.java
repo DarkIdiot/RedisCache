@@ -1,6 +1,7 @@
 package com.darkidiot.redis.config;
 
 import com.darkidiot.redis.common.JedisType;
+import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.util.StringUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.util.Pool;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -28,7 +30,7 @@ public class JedisPoolFactory {
 
     private static Map<String, RedisInitParam> redisParamMap = Maps.newHashMap();
 
-    private static HashMap<String, JedisPool> jedisPoolMap = Maps.newHashMap();
+    private static HashMap<String, Pool> poolMap = Maps.newHashMap();
 
     private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
 
@@ -40,8 +42,8 @@ public class JedisPoolFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
-                for (Entry<String, JedisPool> entry : jedisPoolMap.entrySet()) {
-                    JedisPool pool = entry.getValue();
+                for (Entry<String, Pool> entry : poolMap.entrySet()) {
+                    Pool pool = entry.getValue();
                     log.info("The JedisPool: {} will be destroyed.", pool);
                     pool.destroy();
                 }
@@ -199,13 +201,13 @@ public class JedisPoolFactory {
             String maxWaitMillisR = conf.getProperty(format);
             if (!StringUtil.isEmpty(maxWaitMillisR)) {
                 log.info("RedisCache set configuration[{}] -> {}", format, maxWaitMillisR);
-                redisInitParam.setMaxWaitMillisR(Integer.valueOf(maxWaitMillisR));
+                redisInitParam.setMaxWaitMillisR(Long.valueOf(maxWaitMillisR));
             } else {
                 format = String.format(PKEY_MAX_WAIT, serviceName);
                 maxWaitMillisR = conf.getProperty(format);
                 if (!StringUtil.isEmpty(maxWaitMillisR)) {
                     log.info("RedisCache set configuration[{}] -> {}", format, maxWaitMillisR);
-                    redisInitParam.setMaxWaitMillisR(Integer.valueOf(maxWaitMillisR));
+                    redisInitParam.setMaxWaitMillisR(Long.valueOf(maxWaitMillisR));
                 }
             }
 
@@ -269,13 +271,13 @@ public class JedisPoolFactory {
             String maxWaitMillisW = conf.getProperty(format);
             if (!StringUtil.isEmpty(maxWaitMillisW)) {
                 log.info("RedisCache set configuration[{}] -> {}", format, maxWaitMillisW);
-                redisInitParam.setMaxWaitMillisW(Integer.valueOf(maxWaitMillisW));
+                redisInitParam.setMaxWaitMillisW(Long.valueOf(maxWaitMillisW));
             } else {
                 format = String.format(PKEY_MAX_WAIT, serviceName);
                 maxWaitMillisW = conf.getProperty(format);
                 if (!StringUtil.isEmpty(maxWaitMillisW)) {
                     log.info("RedisCache set configuration[{}] -> {}", format, maxWaitMillisW);
-                    redisInitParam.setMaxWaitMillisW(Integer.valueOf(maxWaitMillisW));
+                    redisInitParam.setMaxWaitMillisW(Long.valueOf(maxWaitMillisW));
                 }
             }
 
@@ -299,69 +301,92 @@ public class JedisPoolFactory {
     private final static String READ_SUFFIX = "-read";
     private final static String WRITE_SUFFIX = "-write";
 
-    public static JedisPool getReadPool(String service) {
-        JedisPool readPool = jedisPoolMap.get(service + READ_SUFFIX);
+    public static RedisInitParam getRedisInitParam(String service) {
+        return redisParamMap.get(service);
+    }
+
+    public static Pool getReadPool(String service) {
+        RedisInitParam config = redisParamMap.get(service);
+        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
+        String serviceName = R$W ? service + READ_SUFFIX : service;
+        Pool readPool = poolMap.get(serviceName);
         if (readPool == null) {
-            readPool = getPool(redisParamMap.get(service), JedisType.READ);
-            jedisPoolMap.put(service + READ_SUFFIX, readPool);
+            readPool = getPool(config, JedisType.READ);
+            poolMap.put(serviceName, readPool);
         }
         return readPool;
     }
 
-    public static JedisPool getWritePool(String service) {
-        JedisPool writePool = jedisPoolMap.get(service + WRITE_SUFFIX);
+    public static Pool getWritePool(String service) {
+        RedisInitParam config = redisParamMap.get(service);
+        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
+        String serviceName = R$W ? service + WRITE_SUFFIX : service;
+        Pool writePool = poolMap.get(serviceName);
         if (writePool == null) {
-            writePool = getPool(redisParamMap.get(service), JedisType.WRITE);
-            jedisPoolMap.put(service + WRITE_SUFFIX, writePool);
+            writePool = getPool(config, JedisType.WRITE);
+            poolMap.put(serviceName, writePool);
         }
         return writePool;
     }
 
-    private static JedisPool getPool(RedisInitParam initParam, JedisType mode) {
-        initParam.getR$WSeparated();
-        if (initParam.getIsCluster()) {
+    private static Pool getPool(RedisInitParam initParam, JedisType mode) {
+        if (getBooleanWithDefault(initParam.getIsCluster(), DEFAULT_IS_CLUSTER)) {
             String sentinelProps = initParam.getSentinelHosts();
             Iterable<String> parts = commaSplitter.split(sentinelProps);
             Set<String> sentinelHosts = Sets.newHashSet(parts);
+            if (sentinelHosts.size() == 0) {
+                throw new RedisException("Redis Cluster configure failure. Cause by not find SentinelHosts.");
+            }
             String masterName = initParam.getSentinelMasterName();
-
-
-
-
-            return new JedisSentinelPool(masterName, sentinelHosts, config);
+            if (StringUtil.isEmpty(masterName)) {
+                throw new RedisException("Redis Cluster configure failure. Cause by not find SentinelMasterName.");
+            }
+            String password = initParam.getPassword();
+            int dbIndex = getIntWithDefault(initParam.getDbIndex(), DEFAULT_DB_INDEX);
+            boolean testOnBorrow = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnBorrowR() : initParam.getTestOnBorrowW(), DEFAULT_TEST_ON_BORROW);
+            boolean testOnReturn = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnReturnR() : initParam.getTestOnReturnW(), DEFAULT_TEST_ON_RETURN);
+            long maxWaitMillis = getLongWithDefault(isRead(mode) ? initParam.getMaxWaitMillisR() : initParam.getMaxWaitMillisW(), DEFAULT_MAX_WAIT);
+            int maxIdle = getIntWithDefault(isRead(mode) ? initParam.getMaxIdleR() : initParam.getMaxIdleW(), DEFAULT_MAX_IDLE);
+            int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_TIMEOUT);
+            JedisPoolConfig config = new JedisPoolConfig();
+            config.setTestOnBorrow(testOnBorrow);
+            config.setTestOnReturn(testOnReturn);
+            config.setMaxWaitMillis(maxWaitMillis);
+            config.setMaxIdle(maxIdle);
+            return new JedisSentinelPool(masterName, sentinelHosts, config, timeout, password, dbIndex);
         } else {
+            String ipPortPwd = initParam.getIpPortPwd();
             String redisHost = initParam.getIp();
             int redisPort = initParam.getPort();
+            String password = initParam.getPassword();
 
-
-
-
-
-            return new JedisPool(config, redisHost, redisPort);
+            if (StringUtil.isNotEmpty(ipPortPwd)) {
+                Pattern pattern = Pattern.compile(IP_PORT_PASSWORD);
+                Matcher matcher = pattern.matcher(ipPortPwd);
+                if (!matcher.matches()) {
+                    throw new IllegalArgumentException("Your redis configuration of " + mode + " is not formated as: ip:port?password.");
+                }
+                redisHost = matcher.group(1);
+                redisPort = Integer.parseInt(matcher.group(2));
+                password = matcher.group(3);
+            }
+            int dbIndex = getIntWithDefault(initParam.getDbIndex(), DEFAULT_DB_INDEX);
+            boolean testOnBorrow = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnBorrowR() : initParam.getTestOnBorrowW(), DEFAULT_TEST_ON_BORROW);
+            boolean testOnReturn = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnReturnR() : initParam.getTestOnReturnW(), DEFAULT_TEST_ON_RETURN);
+            long maxWaitMillis = getLongWithDefault(isRead(mode) ? initParam.getMaxWaitMillisR() : initParam.getMaxWaitMillisW(), DEFAULT_MAX_WAIT);
+            int maxIdle = getIntWithDefault(isRead(mode) ? initParam.getMaxIdleR() : initParam.getMaxIdleW(), DEFAULT_MAX_IDLE);
+            int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_MAX_IDLE);
+            JedisPoolConfig config = new JedisPoolConfig();
+            config.setTestOnBorrow(testOnBorrow);
+            config.setTestOnReturn(testOnReturn);
+            config.setMaxWaitMillis(maxWaitMillis);
+            config.setMaxIdle(maxIdle);
+            return new JedisPool(config, redisHost, redisPort, timeout, password, dbIndex);
         }
+    }
 
-        Pattern pattern = Pattern.compile(IP_PORT_PASSWORD);
-        Matcher matcher = pattern.matcher(ip_port_password);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Your redis configuration of " + mode + " is not formated as: ip:port?password.");
-        }
-        String ip = matcher.group(1);
-        int port = Integer.parseInt(matcher.group(2));
-        String password = matcher.group(3);
-        RedisParam param = new RedisParam(ip, port, password);
-        boolean testOnBorrow = getBooleanWithDefault(initParam.getTestOnBorrow(), DEFAULT_TEST_ON_BORROW);
-        boolean testOnReturn = getBooleanWithDefault(initParam.getTestOnReturn(), DEFAULT_TEST_ON_RETURN);
-        long maxWaitMillis = getLongWithDefault(initParam.getMaxWaitMillis(), DEFAULT_MAX_WAIT);
-        int maxIdle = getIntWithDefault(initParam.getMaxIdle(), DEFAULT_MAX_IDLE);
-        int timeout = getIntWithDefault(initParam.getTimeout(), DEFAULT_TIMEOUT);
-        String serverId = initParam.getServerName();
-        param.config(timeout, maxWaitMillis, maxIdle, testOnBorrow, testOnReturn, serverId);
-        JedisPoolConfig config = new JedisPoolConfig();
-        config.setTestOnBorrow(testOnBorrow);
-        config.setTestOnReturn(testOnReturn);
-        config.setMaxWaitMillis(maxWaitMillis);
-        config.setMaxIdle(maxIdle);
-        return new JedisPool(config, ip, port, timeout, password);
+    private static Boolean isRead(JedisType type) {
+        return JedisType.READ.equals(type);
     }
 
     public static RedisInitParam getInitParam(String service) {

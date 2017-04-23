@@ -73,7 +73,7 @@ public class RedisInitParam {
     /**
      * 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException
      */
-    private Integer maxWaitMillisR;
+    private Long maxWaitMillisR;
     /**
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */
@@ -96,7 +96,7 @@ public class RedisInitParam {
     /**
      * 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException
      */
-    private Integer maxWaitMillisW;
+    private Long maxWaitMillisW;
     /**
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */

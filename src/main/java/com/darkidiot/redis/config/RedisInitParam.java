@@ -50,7 +50,14 @@ public class RedisInitParam {
      * 本地缓存更新订阅线程数，开启本地缓存时候有效
      */
     private Integer subscribeThreadNum;
+
+    /**
+     * redis数据库序号
+     */
+    private Integer dbIndex;
+
     //读基础配置
+
     /**
      * JedisPool链接超时时间
      */
@@ -66,12 +73,14 @@ public class RedisInitParam {
     /**
      * 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException
      */
-    private Long maxWaitMillisR;
+    private Integer maxWaitMillisR;
     /**
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */
     private Integer maxIdleR;
+
     //写基础配置
+
     /**
      * JedisPool链接超时时间
      */
@@ -87,7 +96,7 @@ public class RedisInitParam {
     /**
      * 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException
      */
-    private Long maxWaitMillisW;
+    private Integer maxWaitMillisW;
     /**
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */

@@ -46,7 +46,7 @@ public class Jedis implements IJedis {
 	 */
 	private JedisPool getJedisPoolByType(JedisType type) {
 		switch (type) {
-		case READ:
+            case READ:
 			if (readJedisPool != null) {
 				return readJedisPool;
 			}

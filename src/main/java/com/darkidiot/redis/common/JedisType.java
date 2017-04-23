@@ -13,9 +13,9 @@ import lombok.ToString;
 @ToString
 public enum JedisType {
     //写类型
-    WRITE(0),
+    WRITE(1),
     //读类型
-    READ(1);
+    READ(2);
 
     private int type;
 }

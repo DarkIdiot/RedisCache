@@ -23,6 +23,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
      * 开启本地缓存标示
      */
     private boolean openLocalCacheFlag;
+    private String service;
     /**
      * 本地缓存过期时间(单位:秒)
      */
@@ -32,7 +33,8 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
 
     public RedisMapProxy(String name, IJedis jedis, int localCacheExpire) {
         this.redisCache = new RedisMap<>(name, jedis);
-        openLocalCacheFlag = jedis.baseConfig().getOpenLocalCache();
+        this.openLocalCacheFlag = jedis.baseConfig().getOpenLocalCache();
+        this.service = jedis.baseConfig().getServerName();
         if (openLocalCacheFlag) {
             this.localCache = new LocalMap<>(name, localCacheExpire);
             LocalCacheSynchronizedCenter.subscribe((LocalMap<String, ? extends Serializable>) localCache);
@@ -40,7 +42,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     }
 
     public RedisMapProxy(String name, IJedis jedis) {
-        this(name,jedis,expire);
+        this(name, jedis, expire);
     }
 
     @Override
@@ -52,7 +54,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     public void put(K key, V value, KeyValidation<K>... validations) {
         if (openLocalCacheFlag) {
             localCache.put(key, value, validations);
-            LocalCacheSynchronizedCenter.publish(redisCache.getName(), Method.put, key);
+            LocalCacheSynchronizedCenter.publish(this.service, redisCache.getName(), Method.put, key);
         }
         redisCache.put(key, value, validations);
     }
@@ -98,7 +100,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     public void remove(K key, KeyValidation<K>... validations) {
         if (openLocalCacheFlag) {
             localCache.remove(key, validations);
-            LocalCacheSynchronizedCenter.publish(getName(), Method.remove, key);
+            LocalCacheSynchronizedCenter.publish(this.service, getName(), Method.remove, key);
         }
         redisCache.remove(key, validations);
     }
@@ -131,7 +133,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     public void clear() {
         if (openLocalCacheFlag) {
             localCache.clear();
-            LocalCacheSynchronizedCenter.publish(getName(), Method.remove, "");
+            LocalCacheSynchronizedCenter.publish(this.service, getName(), Method.remove, "");
         }
         redisCache.clear();
     }

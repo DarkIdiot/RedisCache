@@ -36,9 +36,7 @@ public class IPorServerConfig {
     }
 
     private static String getServerName(String service) {
-        String serverName = JedisPoolFactory.getInitParam(service).getServerName();
-        log.debug("the server name:{}", serverName);
-        return serverName;
+        return JedisPoolFactory.getInitParam(service).getServerName();
     }
 
     public static String getServerId(String service) {

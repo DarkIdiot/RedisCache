@@ -23,7 +23,7 @@ import redis.clients.util.Pool;
 @Slf4j
 public class SimpleRedisLock implements Lock {
 
-    private static final int MAX_SUPPORT_THREAD_COUNT = 3;
+    private static final int MAX_SUPPORT_THREAD_COUNT = 100;
 
     private Pool pool;
 
@@ -60,6 +60,7 @@ public class SimpleRedisLock implements Lock {
                     int i = 1;
                     String identifier;
                     while (true) {
+                        log.debug("test");
                         // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
                         if (jedis.setnx(lockKey, value) == 1) {
                             //判断是否被其他实例拿到并改变value

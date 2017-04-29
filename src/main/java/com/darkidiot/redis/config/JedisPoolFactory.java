@@ -305,6 +305,7 @@ public class JedisPoolFactory {
         return redisParamMap.get(service);
     }
 
+    @SuppressWarnings("unchecked")
     public static Pool getReadPool(String service) {
         RedisInitParam config = redisParamMap.get(service);
         Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
@@ -313,10 +314,12 @@ public class JedisPoolFactory {
         if (readPool == null) {
             readPool = getPool(config, JedisType.READ);
             poolMap.put(serviceName, readPool);
+            log.debug("store the Jedis Pool Instance [name={}] to HashMap.", serviceName);
         }
         return readPool;
     }
 
+    @SuppressWarnings("unchecked")
     public static Pool getWritePool(String service) {
         RedisInitParam config = redisParamMap.get(service);
         Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
@@ -325,6 +328,7 @@ public class JedisPoolFactory {
         if (writePool == null) {
             writePool = getPool(config, JedisType.WRITE);
             poolMap.put(serviceName, writePool);
+            log.debug("store the Jedis Pool Instance [name={}] to HashMap.", serviceName);
         }
         return writePool;
     }

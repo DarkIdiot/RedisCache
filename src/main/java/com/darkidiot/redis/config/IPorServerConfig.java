@@ -31,15 +31,20 @@ public class IPorServerConfig {
         } catch (Exception e) {
             log.error("get the IP error, cause by:{}", Throwables.getStackTraceAsString(e));
         }
+        log.debug("the IP List:{}", addressList);
         return addressList.toString();
     }
 
     private static String getServerName(String service) {
-        return JedisPoolFactory.getInitParam(service).getServerName();
+        String serverName = JedisPoolFactory.getInitParam(service).getServerName();
+        log.debug("the server name:{}", serverName);
+        return serverName;
     }
 
     public static String getServerId(String service) {
-        return getServerName(service) + "-" + getIP();
+        String serverId = getServerName(service) + "-" + getIP();
+        log.debug("the server id is:[{}]", serverId);
+        return serverId;
     }
 
     public static void main(String[] args) {

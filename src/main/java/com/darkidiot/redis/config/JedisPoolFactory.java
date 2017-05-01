@@ -374,7 +374,6 @@ public class JedisPoolFactory {
                 redisPort = Integer.parseInt(matcher.group(2));
                 password = matcher.group(3);
             }
-
             if (StringUtil.isEmpty(redisHost)) {
                 log.warn("Redis standalone configure failure. Cause by not find ip, and use the default value:[{}].", DEFAULT_IP);
                 redisHost = DEFAULT_IP;

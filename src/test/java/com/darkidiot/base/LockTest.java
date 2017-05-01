@@ -45,14 +45,14 @@ public class LockTest {
                 @Override
                 public void run() {
                     String identifier = lock.lock();
-                    Jedis resource = pool.getResource();
+//                    Jedis resource = pool.getResource();
                     log.info(Thread.currentThread() + ":" + identifier);
-                    String count = resource.get("Count");
-                    log.info(Thread.currentThread() + ":" + count);
-                    resource.set("Count", Integer.valueOf(count) + 1 + "");
+//                    String count = resource.get("Count");
+//                    log.info(Thread.currentThread() + ":" + count);
+//                    resource.set("Count", Integer.valueOf(count) + 1 + "");
                     boolean unlockFlag = lock.unlock(identifier);
                     log.info(Thread.currentThread() + ":" + unlockFlag);
-                    resource.close();
+//                    resource.close();
                     countDownLatch.countDown();
                 }
             }).start();

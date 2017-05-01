@@ -1,5 +1,6 @@
 package com.darkidiot.redis.lock.imp;
 
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import com.darkidiot.redis.util.CommonUtil;
@@ -60,7 +61,7 @@ public class SimpleRedisLock implements Lock {
                     int i = 1;
                     String identifier;
                     while (true) {
-                        log.debug("test");
+                        log.debug("=========================test");
                         // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
                         if (jedis.setnx(lockKey, value) == 1) {
                             //判断是否被其他实例拿到并改变value
@@ -84,13 +85,13 @@ public class SimpleRedisLock implements Lock {
                         }
 
                         try {
-                            Thread.sleep(Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++));
+                            Thread.sleep(Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++)));
                         } catch (InterruptedException ie) {
                             Thread.currentThread().interrupt();
                         }
 
                         if (System.currentTimeMillis() > end) {
-                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+//                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                         }
                     }
                     return identifier;

@@ -5,7 +5,6 @@ import com.darkidiot.redis.queue.impl.PerfectPriorityQueue;
 import com.darkidiot.redis.queue.impl.RoughPriorityQueue;
 import com.darkidiot.redis.queue.impl.SimpleFifoQueue;
 import com.darkidiot.redis.queue.impl.SimplePriorityQueue;
-import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
@@ -18,8 +17,6 @@ import redis.clients.jedis.JedisPool;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 
 @FixMethodOrder(MethodSorters.JVM)
@@ -43,15 +40,18 @@ public class QueueTest {
         resource.del("Queue:Simple Fifo Queue");
         resource.close();
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            int count = i;
-            new Thread(() -> {
-                queue.enqueue(new Person(count + ""));
-                log.info(Thread.currentThread() + ": enqueue " + count);
-                countDownLatch.countDown();
+            final int count = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(new Person(count + ""));
+                    log.info(Thread.currentThread() + ": enqueue " + count);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -65,14 +65,17 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue2() {
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person dequeue = queue.dequeue();
-                log.info(Thread.currentThread() + ": dequeue " + dequeue);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person dequeue = queue.dequeue();
+                    log.info(Thread.currentThread() + ": dequeue " + dequeue);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -86,14 +89,17 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue3() {
         int n = testCount;
-        Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person top = queue.top();
-                log.info(Thread.currentThread() + ": Top " + top);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person top = queue.top();
+                    log.info(Thread.currentThread() + ": Top " + top);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -107,14 +113,17 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue4() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                long size = queue.size();
-                log.info(Thread.currentThread() + ": queue size " + size);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long size = queue.size();
+                    log.info(Thread.currentThread() + ": queue size " + size);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -128,14 +137,17 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue5() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.isEmpty();
-                log.info(Thread.currentThread() + ": is empty " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.isEmpty();
+                    log.info(Thread.currentThread() + ": is empty " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -149,14 +161,17 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue6() {
         int n = testCount;
-        Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.clear();
-                log.info(Thread.currentThread() + ": is clear " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.clear();
+                    log.info(Thread.currentThread() + ": is clear " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -178,21 +193,27 @@ public class QueueTest {
         resource.del("Queue:Highly Priority Queue:Simple Priority Queue");
         resource.close();
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(2 * n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(2 * n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            int count = i;
-            new Thread(() -> {
-                queue.enqueue(new Person(count + ""));
-                log.info(Thread.currentThread() + ": lowly enqueue " + count);
-                countDownLatch.countDown();
+            final int count = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(new Person(count + ""));
+                    log.info(Thread.currentThread() + ": lowly enqueue " + count);
+                    countDownLatch.countDown();
+                }
             }).start();
 
-            new Thread(() -> {
-                queue.enqueue(1, new Person(count + ""));
-                log.info(Thread.currentThread() + ": highly enqueue " + count);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(1, new Person(count + ""));
+                    log.info(Thread.currentThread() + ": highly enqueue " + count);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -206,14 +227,17 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person dequeue = queue.dequeue();
-                log.info(Thread.currentThread() + ": dequeue " + dequeue);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person dequeue = queue.dequeue();
+                    log.info(Thread.currentThread() + ": dequeue " + dequeue);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -227,14 +251,17 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue3() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person top = queue.top();
-                log.info(Thread.currentThread() + ": Top " + top);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person top = queue.top();
+                    log.info(Thread.currentThread() + ": Top " + top);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -248,14 +275,17 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue4() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                long size = queue.size();
-                log.info(Thread.currentThread() + ": queue size " + size);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long size = queue.size();
+                    log.info(Thread.currentThread() + ": queue size " + size);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -269,14 +299,17 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue5() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.isEmpty();
-                log.info(Thread.currentThread() + ": is empty " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.isEmpty();
+                    log.info(Thread.currentThread() + ": is empty " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -290,14 +323,17 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue6() {
         int n = testCount;
-        Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.clear();
-                log.info(Thread.currentThread() + ": is clear " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.clear();
+                    log.info(Thread.currentThread() + ": is clear " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -322,15 +358,18 @@ public class QueueTest {
         }
         resource.del(list.toArray(new String[list.size()]));
         resource.close();
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            int count = i;
-            new Thread(() -> {
-                queue.enqueue(count, new Person(count + ""));
-                log.info(Thread.currentThread() + ":enqueue " + count);
-                countDownLatch.countDown();
+            final int count = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(count, new Person(count + ""));
+                    log.info(Thread.currentThread() + ":enqueue " + count);
+                    countDownLatch.countDown();
+                }
             }).start();
 
         }
@@ -345,14 +384,17 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person dequeue = queue.dequeue();
-                log.info(Thread.currentThread() + ": dequeue " + dequeue);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person dequeue = queue.dequeue();
+                    log.info(Thread.currentThread() + ": dequeue " + dequeue);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -366,14 +408,17 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue3() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person top = queue.top();
-                log.info(Thread.currentThread() + ": Top " + top);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person top = queue.top();
+                    log.info(Thread.currentThread() + ": Top " + top);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -387,14 +432,17 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue4() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                long size = queue.size();
-                log.info(Thread.currentThread() + ": queue size " + size);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long size = queue.size();
+                    log.info(Thread.currentThread() + ": queue size " + size);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -408,14 +456,17 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue5() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.isEmpty();
-                log.info(Thread.currentThread() + ": is empty " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.isEmpty();
+                    log.info(Thread.currentThread() + ": is empty " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -429,14 +480,17 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue6() {
         int n = testCount;
-        Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.clear();
-                log.info(Thread.currentThread() + ": is clear " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.clear();
+                    log.info(Thread.currentThread() + ": is clear " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -457,15 +511,18 @@ public class QueueTest {
         Jedis resource = pool.getResource();
         resource.del("Queue:Perfect Priority Queue");
         resource.close();
-        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            int count = i;
-            new Thread(() -> {
-                queue.enqueue(count, count + "");
-                log.info(Thread.currentThread() + ":enqueue " + count);
-                countDownLatch.countDown();
+            final int count = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(count, count + "");
+                    log.info(Thread.currentThread() + ":enqueue " + count);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -482,15 +539,20 @@ public class QueueTest {
         Jedis resource = pool.getResource();
         resource.del("Queue:Perfect Priority Queue");
         resource.close();
-        Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            int count = i;
-            new Thread(() -> {
-                queue.enqueue(count, new Person("Tom_" + count));
-                log.info(Thread.currentThread() + ":enqueue Tom_" + count);
-                countDownLatch.countDown();
+            final int count = i;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.enqueue(count, new Person("Tom_" + count));
+                    log.info(Thread.currentThread() + ":enqueue Tom_" + count);
+                    countDownLatch.countDown();
+                }
+
+                ;
             }).start();
         }
         try {
@@ -504,14 +566,17 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue2() {
         int n = testCount;
-        Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Person dequeue = queue.dequeue();
-                log.info(Thread.currentThread() + ": dequeue " + dequeue);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Person dequeue = queue.dequeue();
+                    log.info(Thread.currentThread() + ": dequeue " + dequeue);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -525,14 +590,17 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue3() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                Object top = queue.top();
-                log.info(Thread.currentThread() + ": Top " + top);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Object top = queue.top();
+                    log.info(Thread.currentThread() + ": Top " + top);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -546,14 +614,17 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue4() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                long size = queue.size();
-                log.info(Thread.currentThread() + ": queue size " + size);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    long size = queue.size();
+                    log.info(Thread.currentThread() + ": queue size " + size);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -567,14 +638,17 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue5() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.isEmpty();
-                log.info(Thread.currentThread() + ": is empty " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.isEmpty();
+                    log.info(Thread.currentThread() + ": is empty " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -588,14 +662,17 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue6() {
         int n = testCount;
-        Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
-        CountDownLatch countDownLatch = new CountDownLatch(n);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
-            new Thread(() -> {
-                boolean empty = queue.clear();
-                log.info(Thread.currentThread() + ": is clear " + empty);
-                countDownLatch.countDown();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean empty = queue.clear();
+                    log.info(Thread.currentThread() + ": is clear " + empty);
+                    countDownLatch.countDown();
+                }
             }).start();
         }
         try {
@@ -607,8 +684,13 @@ public class QueueTest {
     }
 
 
-    private void shutdownHook(String name, String method, long spendTime) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> log.info(name + " " + method + " spend time " + spendTime + "ms for " + testCount + " Thread.")));
+    private void shutdownHook(final String name, final String method, final long spendTime) {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.info(name + " " + method + " spend time " + spendTime + "ms for " + testCount + " Thread.");
+            }
+        }));
     }
 
     @AfterClass
@@ -620,7 +702,7 @@ public class QueueTest {
         private static final long serialVersionUID = 1L;
         String name;
 
-        public Person(String name) {
+        Person(String name) {
             this.name = name;
         }
 

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,8 @@ public class JedisPoolFactory {
     private static Map<String, RedisInitParam> redisParamMap = Maps.newHashMap();
 
     private static HashMap<String, Pool<redis.clients.jedis.Jedis>> poolMap = Maps.newHashMap();
+
+    private static HashMap<String, Semaphore> semaphoreMap = Maps.newHashMap();
 
     private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
 

@@ -23,7 +23,7 @@ public class LockTest {
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(2000);
+        jedisPoolConfig.setMaxTotal(4000);
         pool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
         Jedis resource = pool.getResource();
         resource.set("Count", "10000");

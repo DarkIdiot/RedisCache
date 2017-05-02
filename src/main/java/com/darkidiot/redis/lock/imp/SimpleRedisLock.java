@@ -1,19 +1,17 @@
 package com.darkidiot.redis.lock.imp;
 
-import java.util.Random;
-import java.util.concurrent.Semaphore;
-
-import com.darkidiot.redis.util.CommonUtil;
-import com.darkidiot.redis.util.StringUtil;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.lock.Lock;
+import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.util.FibonacciUtil;
+import com.darkidiot.redis.util.StringUtil;
 import com.darkidiot.redis.util.UUIDUtil;
-
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.util.Pool;
+
+import java.util.Random;
 
 /**
  * 简单的分布式锁的实现,效率较高(极端情况下，会出现多个实例同时获取到锁的 情况)
@@ -24,13 +22,11 @@ import redis.clients.util.Pool;
 @Slf4j
 public class SimpleRedisLock implements Lock {
 
-    private static final int MAX_SUPPORT_THREAD_COUNT = 100;
 
     private Pool pool;
 
     private String name;
 
-    private Semaphore semaphore;
 
     public SimpleRedisLock(Pool pool, String name) throws RedisException {
         if (pool == null) {
@@ -41,7 +37,6 @@ public class SimpleRedisLock implements Lock {
         }
         this.pool = pool;
         this.name = name;
-        this.semaphore = new Semaphore(MAX_SUPPORT_THREAD_COUNT, true);
     }
 
     @Override
@@ -51,7 +46,6 @@ public class SimpleRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         try {
-            semaphore.acquire();
             return CommonUtil.invoke(new CommonUtil.Callback<String>() {
                 @Override
                 public String call(Jedis jedis) {
@@ -61,7 +55,6 @@ public class SimpleRedisLock implements Lock {
                     int i = 1;
                     String identifier;
                     while (true) {
-                        log.debug("=========================test");
                         // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
                         if (jedis.setnx(lockKey, value) == 1) {
                             //判断是否被其他实例拿到并改变value
@@ -100,10 +93,6 @@ public class SimpleRedisLock implements Lock {
 
         } catch (JedisException je) {
             return null;
-        } catch (InterruptedException e) {
-            return null;
-        } finally {
-            semaphore.release();
         }
     }
 

@@ -350,6 +350,30 @@ public class JedisPoolFactory {
         return readPool;
     }
 
+    public static Semaphore getReadSemaphore(String service) {
+        RedisInitParam config = redisParamMap.get(service);
+        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
+        String serviceName = R$W ? service + READ_SUFFIX : service;
+        Semaphore semaphore = semaphoreMap.get(serviceName);
+        if (semaphore == null) {
+            semaphore = new Semaphore(config.getMaxTotalR());
+            semaphoreMap.put(serviceName, semaphore);
+        }
+        return semaphore;
+    }
+
+    public static Semaphore getWriteSemaphore(String service) {
+        RedisInitParam config = redisParamMap.get(service);
+        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
+        String serviceName = R$W ? service + WRITE_SUFFIX : service;
+        Semaphore semaphore = semaphoreMap.get(serviceName);
+        if (semaphore == null) {
+            semaphore = new Semaphore(config.getMaxTotalW());
+            semaphoreMap.put(serviceName, semaphore);
+        }
+        return semaphore;
+    }
+
     @SuppressWarnings("unchecked")
     public static Pool getWritePool(String service) {
         RedisInitParam config = redisParamMap.get(service);

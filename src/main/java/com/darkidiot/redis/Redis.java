@@ -26,7 +26,7 @@ public class Redis {
      * @return
      */
     public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use(String service, String groupName) {
-        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
+        IJedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
         return new RedisMapProxy<>(groupName, jedis);
     }
 
@@ -38,7 +38,7 @@ public class Redis {
      */
     public static <K extends Serializable, V extends Serializable> IRedisMap<K, V> use(String groupName) {
         String service = RedisPropertyConstants.DEFAULT_SERVICE_KEY;
-        return use(service,groupName);
+        return use(service, groupName);
     }
 
     /**

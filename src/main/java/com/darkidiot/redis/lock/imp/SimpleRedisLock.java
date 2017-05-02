@@ -60,7 +60,7 @@ public class SimpleRedisLock implements Lock {
                             //判断是否被其他实例拿到并改变value
                             String lockValue = jedis.get(lockKey);
                             if (lockValue != null && lockValue.equals(value)) {
-                                //进程crash在这里，然后再继续执行会导致多个实例同时获取到锁的混乱情况
+                                //进程crash在这里，然后再继续执行会导致多个实例同时获取 到锁的混乱情况
                                 jedis.expire(lockKey, lockExpire);
                                 identifier = value;
                                 break;
@@ -84,7 +84,7 @@ public class SimpleRedisLock implements Lock {
                         }
 
                         if (System.currentTimeMillis() > end) {
-//                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                         }
                     }
                     return identifier;

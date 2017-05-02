@@ -225,6 +225,20 @@ public class JedisPoolFactory {
                 }
             }
 
+            format = String.format(PKEY_MAX_TOTAL, serviceName + read_prefix);
+            String maxTotalR = conf.getProperty(format);
+            if (!StringUtil.isEmpty(maxTotalR)) {
+                log.info("RedisCache set configuration[{}] -> {}", format, maxTotalR);
+                redisInitParam.setMaxTotalR(Integer.valueOf(maxTotalR));
+            } else {
+                format = String.format(PKEY_MAX_TOTAL, serviceName);
+                maxTotalR = conf.getProperty(format);
+                if (!StringUtil.isEmpty(maxTotalR)) {
+                    log.info("RedisCache set configuration[{}] -> {}", format, maxTotalR);
+                    redisInitParam.setMaxTotalR(Integer.valueOf(maxTotalR));
+                }
+            }
+
             format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName + write_prefix);
             String timeoutW = conf.getProperty(format);
             if (!StringUtil.isEmpty(timeoutW)) {
@@ -294,6 +308,20 @@ public class JedisPoolFactory {
                     redisInitParam.setMaxIdleW(Integer.valueOf(maxIdleW));
                 }
             }
+
+            format = String.format(PKEY_MAX_TOTAL, serviceName + write_prefix);
+            String maxTotalW = conf.getProperty(format);
+            if (!StringUtil.isEmpty(maxTotalW)) {
+                log.info("RedisCache set configuration[{}] -> {}", format, maxTotalW);
+                redisInitParam.setMaxTotalW(Integer.valueOf(maxTotalW));
+            } else {
+                format = String.format(PKEY_MAX_TOTAL, serviceName);
+                maxTotalW = conf.getProperty(format);
+                if (!StringUtil.isEmpty(maxTotalW)) {
+                    log.info("RedisCache set configuration[{}] -> {}", format, maxTotalW);
+                    redisInitParam.setMaxTotalW(Integer.valueOf(maxTotalW));
+                }
+            }
             redisParamMap.put(serviceName, redisInitParam);
         }
     }
@@ -351,12 +379,14 @@ public class JedisPoolFactory {
             boolean testOnReturn = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnReturnR() : initParam.getTestOnReturnW(), DEFAULT_TEST_ON_RETURN);
             long maxWaitMillis = getLongWithDefault(isRead(mode) ? initParam.getMaxWaitMillisR() : initParam.getMaxWaitMillisW(), DEFAULT_MAX_WAIT);
             int maxIdle = getIntWithDefault(isRead(mode) ? initParam.getMaxIdleR() : initParam.getMaxIdleW(), DEFAULT_MAX_IDLE);
+            int maxTotal = getIntWithDefault(isRead(mode) ? initParam.getMaxTotalR() : initParam.getMaxTotalW(), DEFAULT_MAX_TOTAL);
             int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_TIMEOUT);
             JedisPoolConfig config = new JedisPoolConfig();
             config.setTestOnBorrow(testOnBorrow);
             config.setTestOnReturn(testOnReturn);
             config.setMaxWaitMillis(maxWaitMillis);
             config.setMaxIdle(maxIdle);
+            config.setMaxTotal(maxTotal);
             return new JedisSentinelPool(masterName, sentinelHosts, config, timeout, password, dbIndex);
         } else {
             String ipPortPwd = initParam.getIpPortPwd();
@@ -388,12 +418,14 @@ public class JedisPoolFactory {
             boolean testOnReturn = getBooleanWithDefault(isRead(mode) ? initParam.getTestOnReturnR() : initParam.getTestOnReturnW(), DEFAULT_TEST_ON_RETURN);
             long maxWaitMillis = getLongWithDefault(isRead(mode) ? initParam.getMaxWaitMillisR() : initParam.getMaxWaitMillisW(), DEFAULT_MAX_WAIT);
             int maxIdle = getIntWithDefault(isRead(mode) ? initParam.getMaxIdleR() : initParam.getMaxIdleW(), DEFAULT_MAX_IDLE);
+            int maxTotal = getIntWithDefault(isRead(mode) ? initParam.getMaxTotalR() : initParam.getMaxTotalW(), DEFAULT_MAX_TOTAL);
             int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_MAX_IDLE);
             JedisPoolConfig config = new JedisPoolConfig();
             config.setTestOnBorrow(testOnBorrow);
             config.setTestOnReturn(testOnReturn);
             config.setMaxWaitMillis(maxWaitMillis);
             config.setMaxIdle(maxIdle);
+            config.setMaxTotal(maxTotal);
             return new JedisPool(config, redisHost, redisPort, timeout, password, dbIndex);
         }
     }

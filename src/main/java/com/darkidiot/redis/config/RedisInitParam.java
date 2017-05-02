@@ -78,6 +78,7 @@ public class RedisInitParam {
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */
     private Integer maxIdleR;
+    private Integer maxTotalR;
 
     //写基础配置
 
@@ -101,4 +102,5 @@ public class RedisInitParam {
      * 控制一个pool最多有多少个状态为idle的jedis实例
      */
     private Integer maxIdleW;
+    private Integer maxTotalW;
 }

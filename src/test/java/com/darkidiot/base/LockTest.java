@@ -1,29 +1,30 @@
 package com.darkidiot.base;
 
-import java.util.concurrent.CountDownLatch;
-
-import lombok.extern.slf4j.Slf4j;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
 import com.darkidiot.redis.lock.imp.StrictRedisLock;
-
+import lombok.extern.slf4j.Slf4j;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
     private static JedisPool pool;
 
-    private int testCount = 2000; // 2000、5000、10000
+    private int testCount = 4000; // 2000、5000、10000
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        pool = new JedisPool("127.0.0.1", 6379);
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxTotal(2000);
+        pool = new JedisPool(jedisPoolConfig, "127.0.0.1", 6379);
         Jedis resource = pool.getResource();
         resource.set("Count", "10000");
         resource.close();

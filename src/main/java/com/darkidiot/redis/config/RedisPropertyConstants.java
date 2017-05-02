@@ -46,7 +46,7 @@ public interface RedisPropertyConstants {
     /** JedisPool链接超时时间 */
     String PKEY_TIMEOUT_IN_MILLIS = "%s.timeoutInMillis";
     /** 最大活跃jedis实例数量 */
-    String PKEY_MAX_ACTIVE = "%s.maxActive";
+    String PKEY_MAX_TOTAL = "%s.maxActive";
     /** 控制一个pool最多有多少个状态为idle的jedis实例 */
     String PKEY_MAX_IDLE = "%s.maxIdle";
     /** 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException */
@@ -70,6 +70,7 @@ public interface RedisPropertyConstants {
     boolean DEFAULT_IS_CLUSTER = false;
     boolean DEFAULT_R$W_SEPARATED =true;
     int DEFAULT_TIMEOUT = 2000;
+    int DEFAULT_MAX_TOTAL = 8;
     int DEFAULT_MAX_IDLE = 8;
     int DEFAULT_MAX_WAIT = 10000;
     boolean DEFAULT_TEST_ON_BORROW = false;

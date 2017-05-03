@@ -17,27 +17,31 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 class RedisMapProxy<K extends Serializable, V extends Serializable> implements IRedisMap<K, V> {
 
-    IRedisMap<K, V> redisCache;
-    IRedisMap<K, V> localCache;
+    private IRedisMap<K, V> redisCache;
+    private IRedisMap<K, V> localCache;
     /**
      * 开启本地缓存标示
      */
     private boolean openLocalCacheFlag;
     private String service;
+    private final IJedis jedis;
+    private final String name;
     /**
      * 本地缓存过期时间(单位:秒)
      */
     private static final int expire = 3600;
 
-    private final KeyValidation<K> nop_validation = new NopValidation<K>();
+    private final KeyValidation<K> nop_validation = new NopValidation<>();
 
     public RedisMapProxy(String name, IJedis jedis, int localCacheExpire) {
+        this.jedis = jedis;
+        this.name = name;
         this.redisCache = new RedisMap<>(name, jedis);
         this.openLocalCacheFlag = jedis.baseConfig().getOpenLocalCache();
         this.service = jedis.baseConfig().getServerName();
         if (openLocalCacheFlag) {
             this.localCache = new LocalMap<>(name, localCacheExpire);
-            LocalCacheSynchronizedCenter.subscribe((LocalMap<String, ? extends Serializable>) localCache);
+            LocalCacheSynchronizedCenter.subscribe(this.jedis, (LocalMap<String, ? extends Serializable>) localCache);
         }
     }
 
@@ -54,7 +58,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     public void put(K key, V value, KeyValidation<K>... validations) {
         if (openLocalCacheFlag) {
             localCache.put(key, value, validations);
-            LocalCacheSynchronizedCenter.publish(this.service, redisCache.getName(), Method.put, key);
+            LocalCacheSynchronizedCenter.publish(jedis, this.service, getName(), Method.put, key);
         }
         redisCache.put(key, value, validations);
     }
@@ -100,7 +104,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
     public void remove(K key, KeyValidation<K>... validations) {
         if (openLocalCacheFlag) {
             localCache.remove(key, validations);
-            LocalCacheSynchronizedCenter.publish(this.service, getName(), Method.remove, key);
+            LocalCacheSynchronizedCenter.publish(jedis, this.service, getName(), Method.remove, key);
         }
         redisCache.remove(key, validations);
     }
@@ -126,14 +130,14 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
 
     @Override
     public String getName() {
-        return this.redisCache.getName();
+        return this.name;
     }
 
     @Override
     public void clear() {
         if (openLocalCacheFlag) {
             localCache.clear();
-            LocalCacheSynchronizedCenter.publish(this.service, getName(), Method.remove, "");
+            LocalCacheSynchronizedCenter.publish(jedis, this.service, getName(), Method.remove, "");
         }
         redisCache.clear();
     }

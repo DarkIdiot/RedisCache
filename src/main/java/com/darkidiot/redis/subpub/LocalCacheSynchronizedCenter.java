@@ -5,6 +5,7 @@ import com.darkidiot.redis.common.Method;
 import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.config.RedisInitParam;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.UUIDUtil;
 import com.google.common.base.Throwables;
@@ -61,7 +62,7 @@ public class LocalCacheSynchronizedCenter {
                         try {
                             cacheSynchronizedCenterThread.interrupt();
                             cacheSynchronizedCenterThread.join();
-                            log.error("Thread-{}-{}  was closed", cacheSynchronizedCenterThread.getName(), cacheSynchronizedCenterThread.getId());
+                            log.error("{} was closed", cacheSynchronizedCenterThread.getName());
                         } catch (InterruptedException e) {
                             log.error("Thread was Interrupted, cause by:{}", Throwables.getStackTraceAsString(e));
                         }
@@ -77,7 +78,7 @@ public class LocalCacheSynchronizedCenter {
      *
      * @param localCache 本地缓存
      */
-    public synchronized static void subscribe(LocalMap<String, ? extends Serializable> localCache) {
+    public synchronized static void subscribe(IJedis jedis, LocalMap<String, ? extends Serializable> localCache) {
         LocalMap<String, ? extends Serializable> cache = LOCAL_CACHES.get(localCache.getName());
         if (cache == null) {
             LOCAL_CACHES.put(localCache.getName(), localCache);
@@ -121,8 +122,8 @@ public class LocalCacheSynchronizedCenter {
      * @param method    方法名称
      * @param key       键值
      */
-    public static <K extends Serializable> void publish(String service, String groupName, Method method, K key) {
-        try (Jedis jedis = (Jedis) JedisPoolFactory.getWritePool(service).getResource()) {
+    public static <K extends Serializable> void publish(IJedis jedis, String service, String groupName, Method method, K key) {
+        try {
             MsgVo msg = new MsgVo(CLIENT_ID, IPorServerConfig.getServerId(service), method, groupName, ByteObjectConvertUtil.getBytesFromObject(key));
             String json = gson.toJson(msg);
             jedis.publish(TOPIC_SYNCHRONIZED_LOCAL_CACHE, json);

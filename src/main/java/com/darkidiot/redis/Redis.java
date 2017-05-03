@@ -51,5 +51,4 @@ public class Redis {
         return use(groupName);
     }
 
-
 }

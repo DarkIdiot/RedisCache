@@ -41,7 +41,6 @@ public interface RedisPropertyConstants {
     /** 密码 */
     String PKEY_PASSWORD = "%s.password";
     String PKEY_OPEN_LOCAL_CACHE = "%s.open.local.cache";
-    String PKEY_SUBSCRIBE_THREAD_NUMBER = "%s.subscribe.thread.num";
 
     /** JedisPool链接超时时间 */
     String PKEY_TIMEOUT_IN_MILLIS = "%s.timeoutInMillis";

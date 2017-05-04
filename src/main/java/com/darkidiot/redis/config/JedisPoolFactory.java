@@ -144,13 +144,6 @@ public class JedisPoolFactory {
                 redisInitParam.setOpenLocalCache(Boolean.valueOf(openLocalCache));
             }
 
-            format = String.format(PKEY_SUBSCRIBE_THREAD_NUMBER, serviceName);
-            String subscribeThreadNum = conf.getProperty(format);
-            if (!StringUtil.isEmpty(subscribeThreadNum)) {
-                log.info("RedisCache set configuration[{}] -> {}", format, subscribeThreadNum);
-                redisInitParam.setSubscribeThreadNum(Integer.valueOf(subscribeThreadNum));
-            }
-
             format = String.format(PKEY_DB_INDEX, serviceName);
             String dbIndex = conf.getProperty(format);
             if (!StringUtil.isEmpty(dbIndex)) {

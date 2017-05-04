@@ -46,10 +46,6 @@ public class RedisInitParam {
      * 是否开启本地缓存
      */
     private Boolean openLocalCache;
-    /**
-     * 本地缓存更新订阅线程数，开启本地缓存时候有效
-     */
-    private Integer subscribeThreadNum;
 
     /**
      * redis数据库序号

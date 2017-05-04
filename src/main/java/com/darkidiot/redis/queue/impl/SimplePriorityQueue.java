@@ -1,6 +1,7 @@
 package com.darkidiot.redis.queue.impl;
 
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.CommonUtil.Callback;
@@ -23,22 +24,22 @@ import static com.darkidiot.redis.util.CommonUtil.invoke;
 @Slf4j
 public class SimplePriorityQueue<T extends Serializable> implements Queue<T> {
 
-    private Pool pool;
     private String name;
+    private IJedis jedis;
 
     private static final String highlyPriorityQueue = "Highly Priority Queue:";
     private static final String lowlyPriorityQueue = "Lowly Priority Queue:";
 
     private static final String queueName = "Simple Priority Queue";
 
-    public SimplePriorityQueue(String name, Pool pool) throws RedisException {
-        if (pool == null) {
-            throw new RedisException("Initialize SimplePriorityQueue failure, And pool can not be null.");
+    public SimplePriorityQueue(String name, IJedis jedis) throws RedisException {
+        if (jedis == null) {
+            throw new RedisException("Initialize SimplePriorityQueue failure, And jedis can not be null.");
         }
         if (StringUtil.isEmpty(name)) {
             throw new RedisException("Initialize SimpleSingleQueueFifoQueue failure, And name can not be empty.");
         }
-        this.pool = pool;
+        this.jedis = jedis;
         this.name = name;
     }
 
@@ -174,6 +175,6 @@ public class SimplePriorityQueue<T extends Serializable> implements Queue<T> {
 
     @Override
     public boolean isEmpty() throws RedisException {
-        return this.size() == 0 ? true : false;
+        return this.size() == 0;
     }
 }

@@ -1,6 +1,7 @@
 package com.darkidiot.redis.queue.impl;
 
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.CommonUtil;
@@ -26,7 +27,7 @@ import java.util.TreeSet;
 public class RoughPriorityQueue<T extends Serializable> implements Queue<T> {
 
     private String name;
-    private Pool pool;
+    private IJedis jedis;
 
     private TreeSet<String> queueNames = new TreeSet<>(new Comparator<String>() {
         @Override
@@ -43,15 +44,15 @@ public class RoughPriorityQueue<T extends Serializable> implements Queue<T> {
         }
     });
 
-    public RoughPriorityQueue(String name, Pool pool) throws RedisException {
-        if (pool == null) {
-            throw new RedisException("Initialize RoughPriorityQueue failure, And pool can not be null.");
+    public RoughPriorityQueue(String name, IJedis jedis) throws RedisException {
+        if (jedis == null) {
+            throw new RedisException("Initialize RoughPriorityQueue failure, And jedis can not be null.");
         }
         if (StringUtil.isEmpty(name)) {
             throw new RedisException("Initialize RoughPriorityQueue failure, And name can not be empty.");
         }
+        this.jedis = jedis;
         this.name = name;
-        this.pool = pool;
         queueNames.add(Constants.createKey(name, Integer.MIN_VALUE * 2));
     }
 

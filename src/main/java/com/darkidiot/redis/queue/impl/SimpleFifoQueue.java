@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.CommonUtil.Callback;
@@ -31,18 +32,18 @@ import redis.clients.util.Pool;
 @SuppressWarnings("unchecked")
 public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 
-	private String name;
-	private Pool pool;
+    private String name;
+    private IJedis jedis;
 
-	public SimpleFifoQueue(String name, Pool pool) throws RedisException {
-		if (pool == null) {
-			throw new RedisException("Initialize SimpleFifoQueue failure, And pool can not be null.");
+	public SimpleFifoQueue(String name, IJedis jedis) throws RedisException {
+		if (jedis == null) {
+			throw new RedisException("Initialize SimpleFifoQueue failure, And jedis can not be null.");
 		}
 		if (StringUtil.isEmpty(name)) {
 			throw new RedisException("Initialize SimpleFifoQueue failure, And name can not be empty.");
 		}
-		this.name = name;
-		this.pool = pool;
+        this.jedis = jedis;
+        this.name = name;
 	}
 
 	@Override
@@ -137,7 +138,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
 
 	@Override
 	public boolean isEmpty() throws RedisException {
-		return this.size() == 0 ? true : false;
+		return this.size() == 0;
 	}
 
 	@Override

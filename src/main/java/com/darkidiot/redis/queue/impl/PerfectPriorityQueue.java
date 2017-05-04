@@ -1,6 +1,7 @@
 package com.darkidiot.redis.queue.impl;
 
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
 import com.darkidiot.redis.util.CommonUtil;
@@ -29,17 +30,17 @@ import java.util.Set;
 public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
 
     private String name;
-    private Pool pool;
+    private IJedis jedis;
 
-    public PerfectPriorityQueue(String name, Pool pool) throws RedisException {
-        if (pool == null) {
-            throw new RedisException("Initialize PerfectPriorityQueue failure, And pool can not be null.");
+    public PerfectPriorityQueue(String name, IJedis jedis) throws RedisException {
+        if (jedis == null) {
+            throw new RedisException("Initialize PerfectPriorityQueue failure, And jedis can not be null.");
         }
         if (StringUtil.isEmpty(name)) {
             throw new RedisException("Initialize PerfectPriorityQueue failure, And name can not be empty.");
         }
         this.name = name;
-        this.pool = pool;
+        this.jedis = jedis;
     }
 
     @Override
@@ -52,25 +53,16 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
         if (members == null || members.length == 0) {
             return false;
         }
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultEnqueueTimeout;
-                    Map<String, Double> tempMap = new HashMap<>();
-                    for (T member : members) {
-                        tempMap.put(ByteObjectConvertUtil.getBytesFromObject(member), (double) priority);
-                    }
-                    long addNum = jedis.zadd(Constants.createKey(name), tempMap);
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Enqueue PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return addNum == members.length;
-                }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return false;
+        long end = System.currentTimeMillis() + Constants.defaultEnqueueTimeout;
+        Map<String, Double> tempMap = new HashMap<>();
+        for (T member : members) {
+            tempMap.put(ByteObjectConvertUtil.getBytesFromObject(member), (double) priority);
         }
+        long addNum = jedis.zadd(Constants.createKey(name), tempMap);
+        if (System.currentTimeMillis() > end) {
+            log.warn("Enqueue PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+        }
+        return addNum == members.length;
     }
 
     @SuppressWarnings("unchecked")

@@ -3,7 +3,6 @@ package com.darkidiot.redis.lock.imp;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
-import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
 import com.darkidiot.redis.util.UUIDUtil;
@@ -11,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisException;
+
+import static com.darkidiot.redis.common.JedisType.WRITE;
+import static com.darkidiot.redis.util.CommonUtil.Callback;
 
 /**
  * 严格的分布式锁的实现(超级超级严格)
@@ -21,7 +23,6 @@ import redis.clients.jedis.exceptions.JedisException;
 public class RigorousRedisLock implements Lock {
 
     private final IJedis jedis;
-
     private final String name;
 
     public RigorousRedisLock(IJedis jedis, String name) throws RedisException {
@@ -43,33 +44,36 @@ public class RigorousRedisLock implements Lock {
         final String value = UUIDUtil.generateShortUUID();
         final String lockKey = Constants.createKey(this.name);
         final int lockExpire = (int) (lockTimeout);
-        long end = System.currentTimeMillis() + acquireTimeout;
-        int i = 1;
-        while (true) {
-            jedis.watch(lockKey);
-            // 开启watch之后，如果key的值被修改，则事务失败，exec方法返回null
-            String retStr = jedis.get(lockKey);
-            // 多个进程同时获取到未上锁状态时,进入事务上锁,第一个事务执行成功之后所有操作都会被取消并进入等待.
-            if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK)) {
-                Transaction t = jedis.multi();
-                t.setex(lockKey, lockExpire, value);
-                if (t.exec() != null) {
-                    return value;
+        final long end = System.currentTimeMillis() + acquireTimeout;
+        return jedis.callOriginalJedis(new Callback<String>() {
+            @Override
+            public String call(Jedis jedis) {
+                int i = 1;
+                while (true) {
+                    jedis.watch(lockKey);
+                    // 开启watch之后，如果key的值被修改，则事务失败，exec方法返回null
+                    String retStr = jedis.get(lockKey);
+                    // 多个进程同时获取到未上锁状态时,进入事务上锁,第一个事务执行成功之后所有操作都会被取消并进入等待.
+                    if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK)) {
+                        Transaction t = jedis.multi();
+                        t.setex(lockKey, lockExpire, value);
+                        if (t.exec() != null) {
+                            return value;
+                        }
+                    }
+                    jedis.unwatch();
+                    try {
+                        Thread.sleep(Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++));
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                    if (System.currentTimeMillis() > end) {
+                        log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                    }
                 }
             }
-            jedis.unwatch();
-            try {
-                Thread.sleep(Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++));
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-            }
-            if (System.currentTimeMillis() > end) {
-                log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-            }
-        }
+        }, WRITE);
     }
-
-}
 
     @Override
     public String lock() throws RedisException {
@@ -82,23 +86,19 @@ public class RigorousRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                    if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
-                        if (System.currentTimeMillis() > end) {
-                            log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                        }
-                        return true;
+        return jedis.callOriginalJedis(new Callback<Boolean>() {
+            @Override
+            public Boolean call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
+                if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
+                    if (System.currentTimeMillis() > end) {
+                        log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
-                    return false;
+                    return true;
                 }
-            }, pool);
-        } catch (JedisException je) {
-            return false;
-        }
+                return false;
+            }
+        }, WRITE);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class RigorousRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
+            return jedis.callOriginalJedis(new Callback<Boolean>() {
                 @Override
                 public Boolean call(Jedis jedis) {
                     long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
@@ -118,7 +118,7 @@ public class RigorousRedisLock implements Lock {
                     }
                     return retStr != null && !retStr.equals(Constants.LOCK_UNLOCK);
                 }
-            }, pool);
+            }, WRITE);
         } catch (JedisException je) {
             return false;
         }

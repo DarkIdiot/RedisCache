@@ -1,12 +1,15 @@
 package com.darkidiot.redis.jedis;
 
+import com.darkidiot.redis.common.JedisType;
+import com.darkidiot.redis.config.RedisInitParam;
+import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Tuple;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.darkidiot.redis.config.RedisInitParam;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.Tuple;
+import static com.darkidiot.redis.util.CommonUtil.Callback;
 
 /**
  * Redis缓存公共接口
@@ -16,6 +19,8 @@ import redis.clients.jedis.Tuple;
 public interface IJedis {
 
     RedisInitParam baseConfig();
+
+    <T> T callOriginalJedis(Callback<T> callback, JedisType type);
 
     /**
      * 发布

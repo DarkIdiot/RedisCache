@@ -1,15 +1,12 @@
 package com.darkidiot.redis.lock.imp;
 
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
-import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
 import com.darkidiot.redis.util.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.Pool;
 
 import java.util.Random;
 
@@ -22,20 +19,18 @@ import java.util.Random;
 @Slf4j
 public class SimpleRedisLock implements Lock {
 
+    private final IJedis jedis;
 
-    private Pool pool;
+    private final String name;
 
-    private String name;
-
-
-    public SimpleRedisLock(Pool pool, String name) throws RedisException {
-        if (pool == null) {
-            throw new RedisException("Initialize SimpleRedisLock failure, And pool can not be null.");
+    public SimpleRedisLock(IJedis jedis, String name) throws RedisException {
+        if (jedis == null) {
+            throw new RedisException("Initialize SimpleRedisLock failure, And jedis can not be null.");
         }
         if (StringUtil.isEmpty(name)) {
             throw new RedisException("Initialize SimpleRedisLock failure, And name can not be empty.");
         }
-        this.pool = pool;
+        this.jedis = jedis;
         this.name = name;
     }
 
@@ -45,55 +40,45 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(this.name);
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<String>() {
-                @Override
-                public String call(Jedis jedis) {
-                    String value = UUIDUtil.generateShortUUID();
-                    int lockExpire = (int) (lockTimeout);
-                    long end = System.currentTimeMillis() + acquireTimeout;
-                    int i = 1;
-                    String identifier;
-                    while (true) {
-                        // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
-                        if (jedis.setnx(lockKey, value) == 1) {
-                            //判断是否被其他实例拿到并改变value
-                            String lockValue = jedis.get(lockKey);
-                            if (lockValue != null && lockValue.equals(value)) {
-                                //进程crash在这里，然后再继续执行会导致多个实例同时获取 到锁的混乱情况
-                                jedis.expire(lockKey, lockExpire);
-                                identifier = value;
-                                break;
-                            }
-                        }
-
-                        /** ttl为 -1 表示key上没有设置生存时间（key是不会不存在的，因为前面setnx自动创建）
-                         *  如果出现这种状况,那就是进程的某个实例setnx成功后 crash 导致紧跟着的expire没有被调用,这时可以直接设置expire并把锁纳为己用
-                         */
-                        if (jedis.ttl(lockKey) == -1) {
-                            jedis.expire(lockKey, lockExpire);
-                            jedis.set(lockKey, value);   //将锁占为己用，并改变value;
-                            identifier = value;
-                            break;
-                        }
-
-                        try {
-                            Thread.sleep(Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++)));
-                        } catch (InterruptedException ie) {
-                            Thread.currentThread().interrupt();
-                        }
-
-                        if (System.currentTimeMillis() > end) {
-                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                        }
-                    }
-                    return identifier;
+        String value = UUIDUtil.generateShortUUID();
+        int lockExpire = (int) (lockTimeout);
+        long end = System.currentTimeMillis() + acquireTimeout;
+        int i = 1;
+        String identifier;
+        while (true) {
+            // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
+            if (jedis.setnx(lockKey, value) == 1) {
+                //判断是否被其他实例拿到并改变value
+                String lockValue = jedis.get(lockKey);
+                if (lockValue != null && lockValue.equals(value)) {
+                    //进程crash在这里，然后再继续执行会导致多个实例同时获取 到锁的混乱情况
+                    jedis.expire(lockKey, lockExpire);
+                    identifier = value;
+                    break;
                 }
-            }, pool);
+            }
 
-        } catch (JedisException je) {
-            return null;
+            /** ttl为 -1 表示key上没有设置生存时间（key是不会不存在的，因为前面setnx自动创建）
+             *  如果出现这种状况,那就是进程的某个实例setnx成功后 crash 导致紧跟着的expire没有被调用,这时可以直接设置expire并把锁纳为己用
+             */
+            if (jedis.ttl(lockKey) == -1) {
+                jedis.expire(lockKey, lockExpire);
+                jedis.set(lockKey, value);   //将锁占为己用，并改变value;
+                identifier = value;
+                break;
+            }
+
+            try {
+                Thread.sleep(Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++)));
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+
+            if (System.currentTimeMillis() > end) {
+                log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+            }
         }
+        return identifier;
     }
 
     @Override
@@ -102,24 +87,15 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                    if (identifier.equals(jedis.get(lockKey))) {
-                        jedis.del(lockKey);
-                        if (System.currentTimeMillis() > end) {
-                            log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            }, pool);
-        } catch (JedisException je) {
-            return false;
+        long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
+        if (identifier.equals(jedis.get(lockKey))) {
+            jedis.del(lockKey);
+            if (System.currentTimeMillis() > end) {
+                log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+            }
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -133,22 +109,13 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    String retStr;
-                    long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
-                    retStr = jedis.get(lockKey);
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Checking SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return retStr != null && retStr.equals(identifier);
-                }
-            }, pool);
-        } catch (JedisException je) {
-            return false;
+        String retStr;
+        long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
+        retStr = jedis.get(lockKey);
+        if (System.currentTimeMillis() > end) {
+            log.warn("Checking SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }
+        return retStr != null && retStr.equals(identifier);
     }
 
     @Override

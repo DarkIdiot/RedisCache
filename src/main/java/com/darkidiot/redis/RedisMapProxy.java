@@ -41,7 +41,7 @@ class RedisMapProxy<K extends Serializable, V extends Serializable> implements I
         this.service = jedis.baseConfig().getServerName();
         if (openLocalCacheFlag) {
             this.localCache = new LocalMap<>(name, localCacheExpire);
-            LocalCacheSynchronizedCenter.subscribe(this.jedis, (LocalMap<String, ? extends Serializable>) localCache);
+            LocalCacheSynchronizedCenter.subscribe(service, jedis, (LocalMap<String, ? extends Serializable>) localCache);
         }
     }
 

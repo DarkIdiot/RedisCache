@@ -50,6 +50,8 @@ public interface IJedis {
 
     boolean zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
+    boolean zadd(String key, Map<String, Double> scoreMembers);
+
     boolean zrem(byte[] key, byte[] value);
 
     Set<Tuple> zrevrangeWithScores(byte[] key, int start, int end);

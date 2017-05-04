@@ -176,6 +176,16 @@ public class Jedis implements IJedis {
     }
 
     @Override
+    public boolean zadd(final String key, final Map<String, Double> scoreMembers) {
+        return handle(new Callback<Boolean>() {
+            @Override
+            public Boolean call(redis.clients.jedis.Jedis jedis) {
+                return jedis.zadd(key, scoreMembers) == 1;
+            }
+        }, WRITE);
+    }
+
+    @Override
     public double zscore(final byte[] key, final byte[] value) {
         return handle(new Callback<Double>() {
             @Override

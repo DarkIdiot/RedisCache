@@ -4,21 +4,22 @@ import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
-import com.darkidiot.redis.util.CommonUtil;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
+import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.Pool;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.darkidiot.redis.common.JedisType.WRITE;
+import static com.darkidiot.redis.util.CommonUtil.Callback;
 
 /**
  * 完美的多优先级支持队列(采用单个队列，每个元素赋予一个Score并按照Score排序得到一个优先级队列)
@@ -54,22 +55,22 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
             return false;
         }
         long end = System.currentTimeMillis() + Constants.defaultEnqueueTimeout;
-        Map<String, Double> tempMap = new HashMap<>();
+        Map<String, Double> tempMap = Maps.newHashMap();
         for (T member : members) {
             tempMap.put(ByteObjectConvertUtil.getBytesFromObject(member), (double) priority);
         }
-        long addNum = jedis.zadd(Constants.createKey(name), tempMap);
+        boolean ret = jedis.zadd(Constants.createKey(name), tempMap);
         if (System.currentTimeMillis() > end) {
             log.warn("Enqueue PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }
-        return addNum == members.length;
+        return ret;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public T dequeue() throws RedisException {
         try {
-            return CommonUtil.invoke(new CommonUtil.Callback<T>() {
+            return jedis.callOriginalJedis(new Callback<T>() {
                 @Override
                 public T call(Jedis jedis) {
                     long end = System.currentTimeMillis() + Constants.defaultDequeueTimeout;
@@ -96,7 +97,7 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
                     }
 
                 }
-            }, pool);
+            }, WRITE);
         } catch (JedisException jedisException) {
             return null;
         }
@@ -105,49 +106,32 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T top() throws RedisException {
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<T>() {
-                @Override
-                public T call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
-                    Set<Tuple> retTupleSet = jedis.zrevrangeWithScores(Constants.createKey(name), 0, 0);
-                    if (retTupleSet != null && retTupleSet.size() == 1) {
-                        Tuple tuple = retTupleSet.iterator().next();
-                        return (T) ByteObjectConvertUtil.getObjectFromBytes(tuple.getElement());
-                    }
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Dequeue PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return null;
-                }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return null;
+        long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
+        Set<Tuple> retTupleSet = jedis.zrevrangeWithScores(Constants.createKey(name), 0, 0);
+        if (retTupleSet != null && retTupleSet.size() == 1) {
+            Tuple tuple = retTupleSet.iterator().next();
+            return (T) ByteObjectConvertUtil.getObjectFromBytes(tuple.getElement());
         }
+        if (System.currentTimeMillis() > end) {
+            log.warn("Dequeue PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+        }
+        return null;
     }
 
     @Override
     public long size() throws RedisException {
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Long>() {
-                @Override
-                public Long call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
-                    long retNum = jedis.zlexcount(Constants.createKey(name), "-", "+");
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Query PerfectPriorityQueue size time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return retNum;
-                }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return -1L;
+        long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
+        long retNum = jedis.zlexcount(Constants.createKey(name), "-", "+");
+        if (System.currentTimeMillis() > end) {
+            log.warn("Query PerfectPriorityQueue size time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }
+        return retNum;
     }
+}
 
     @Override
     public boolean isEmpty() throws RedisException {
-        return this.size() == 0 ? true : false;
+        return this.size() == 0;
     }
 
     @Override
@@ -157,20 +141,10 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
 
     @Override
     public boolean clear() throws RedisException {
-        try {
-            return CommonUtil.invoke(new CommonUtil.Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultClearQueueTimeout;
-                    Long delNum = jedis.del(Constants.createKey(name));
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Clear PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return delNum == 1 || delNum == 0;
-                }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return false;
+        long end = System.currentTimeMillis() + Constants.defaultClearQueueTimeout;
+        Long delNum = jedis.del(Constants.createKey(name));
+        if (System.currentTimeMillis() > end) {
+            log.warn("Clear PerfectPriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }
+        return delNum == 1 || delNum == 0;
     }
-}

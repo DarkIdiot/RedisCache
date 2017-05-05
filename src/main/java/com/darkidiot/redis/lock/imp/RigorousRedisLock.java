@@ -12,6 +12,8 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisException;
 
 import static com.darkidiot.redis.common.JedisType.WRITE;
+import static com.darkidiot.redis.lock.imp.Constants.defaultAcquireLockTimeout;
+import static com.darkidiot.redis.lock.imp.Constants.defaultLockTimeout;
 import static com.darkidiot.redis.util.CommonUtil.Callback;
 
 /**
@@ -77,7 +79,7 @@ public class RigorousRedisLock implements Lock {
 
     @Override
     public String lock() throws RedisException {
-        return lock(Constants.defaultAcquireLockTimeout, Constants.defaultLockTimeout);
+        return lock(defaultAcquireLockTimeout, defaultLockTimeout);
     }
 
     @Override

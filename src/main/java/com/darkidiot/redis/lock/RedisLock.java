@@ -2,12 +2,13 @@ package com.darkidiot.redis.lock;
 
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
+import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
 import com.darkidiot.redis.lock.imp.StrictRedisLock;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import redis.clients.util.Pool;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,8 +39,8 @@ public class RedisLock {
     public static Lock useRigorousRedisLock(final String lockname, final String service) throws RedisException {
         return invoke(new Callback() {
             @Override
-            public Lock call(Pool pool) throws RedisException {
-                return new RigorousRedisLock(pool, lockname);
+            public Lock call(IJedis jedis) throws RedisException {
+                return new RigorousRedisLock(jedis, lockname);
             }
         }, RIGOROUS_LOCK_PREFIX, lockname, service);
     }
@@ -51,8 +52,8 @@ public class RedisLock {
     public static Lock useSimpleRedisLock(final String lockname, final String service) throws RedisException {
         return invoke(new Callback() {
             @Override
-            public Lock call(Pool pool) throws RedisException {
-                return new SimpleRedisLock(pool, lockname);
+            public Lock call(IJedis jedis) throws RedisException {
+                return new SimpleRedisLock(jedis, lockname);
             }
         }, SIMPLE_LOCK_PREFIX, lockname, service);
     }
@@ -64,21 +65,21 @@ public class RedisLock {
     public static Lock useStrictRedisLock(final String lockname, final String service) throws RedisException {
         return invoke(new Callback() {
             @Override
-            public Lock call(Pool pool) throws RedisException {
-                return new StrictRedisLock(pool, lockname);
+            public Lock call(IJedis jedis) throws RedisException {
+                return new StrictRedisLock(jedis, lockname);
             }
         }, STRICT_LOCK_PREFIX, lockname, service);
     }
 
     private interface Callback {
-        Lock call(Pool pool) throws RedisException;
+        Lock call(IJedis jedis) throws RedisException;
     }
 
     private static Lock invoke(Callback callback, String prefix, String lockname, String service) throws RedisException {
         String key = createKey(lockname, prefix);
         Lock lock = LockMap.get(key);
         if (lock == null) {
-            lock = callback.call(JedisPoolFactory.getWritePool(service));
+            lock = callback.call(new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service)));
             LockMap.put(key, lock);
         }
         return lock;

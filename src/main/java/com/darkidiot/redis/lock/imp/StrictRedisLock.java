@@ -69,12 +69,13 @@ public class StrictRedisLock implements Lock {
                         }
                     }
                     try {
-                        Thread.sleep(Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++));
+                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++);
+                        if (System.currentTimeMillis() > end) {
+                            log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
+                        }
+                        Thread.sleep(sleepMillis);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
-                    }
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Acquire StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
                 }
             }

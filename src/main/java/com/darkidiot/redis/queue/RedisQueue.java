@@ -2,13 +2,14 @@ package com.darkidiot.redis.queue;
 
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.jedis.IJedis;
+import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.queue.impl.PerfectPriorityQueue;
 import com.darkidiot.redis.queue.impl.RoughPriorityQueue;
 import com.darkidiot.redis.queue.impl.SimpleFifoQueue;
 import com.darkidiot.redis.queue.impl.SimplePriorityQueue;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import redis.clients.util.Pool;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -40,8 +41,8 @@ public class RedisQueue {
     public static <T extends Serializable> Queue<T> usePerfectPriorityQueue(final String queueName, final String service) throws RedisException {
         return invoke(new Callback<T>() {
             @Override
-            public Queue<T> call(Pool pool) throws RedisException {
-                return new PerfectPriorityQueue<>(queueName, pool);
+            public Queue<T> call(IJedis jedis) throws RedisException {
+                return new PerfectPriorityQueue<>(queueName, jedis);
             }
         }, PERFECT_PRIORITY_QUEUE_PREFIX, queueName, service);
     }
@@ -53,8 +54,8 @@ public class RedisQueue {
     public static <T extends Serializable> Queue<T> useRoughPriorityQueue(final String queueName, final String service) throws RedisException {
         return invoke(new Callback<T>() {
             @Override
-            public Queue<T> call(Pool pool) throws RedisException {
-                return new RoughPriorityQueue<>(queueName, pool);
+            public Queue<T> call(IJedis jedis) throws RedisException {
+                return new RoughPriorityQueue<>(queueName, jedis);
             }
         }, ROUGH_PRIORITY_QUEUE_PREFIX, queueName, service);
     }
@@ -66,8 +67,8 @@ public class RedisQueue {
     public static <T extends Serializable> Queue<T> useSimplePriorityQueue(final String queueName, final String service) throws RedisException {
         return invoke(new Callback<T>() {
             @Override
-            public Queue<T> call(Pool pool) throws RedisException {
-                return new SimplePriorityQueue<>(queueName, pool);
+            public Queue<T> call(IJedis jedis) throws RedisException {
+                return new SimplePriorityQueue<>(queueName, jedis);
             }
         }, SIMPLE_PRIORITY_QUEUE_PREFIX, queueName, service);
     }
@@ -79,14 +80,14 @@ public class RedisQueue {
     public static <T extends Serializable> Queue<T> useSimpleFifoQueue(final String queueName, final String service) throws RedisException {
         return invoke(new Callback<T>() {
             @Override
-            public Queue<T> call(Pool pool) throws RedisException {
-                return new SimpleFifoQueue<>(queueName, pool);
+            public Queue<T> call(IJedis jedis) throws RedisException {
+                return new SimpleFifoQueue<>(queueName, jedis);
             }
         }, SIMPLE_FIFO_QUEUE_PREFIX, queueName, service);
     }
 
     private interface Callback<T extends Serializable> {
-        Queue<T> call(Pool pool) throws RedisException;
+        Queue<T> call(IJedis jedis) throws RedisException;
     }
 
     @SuppressWarnings("unchecked")
@@ -94,7 +95,7 @@ public class RedisQueue {
         String key = createKey(queueName, prefix);
         Queue<T> queue = (Queue<T>) QueueMap.get(key);
         if (queue == null) {
-            queue = callback.call(JedisPoolFactory.getWritePool(service));
+            queue = callback.call(new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service)));
             QueueMap.put(key, queue);
         }
         return queue;

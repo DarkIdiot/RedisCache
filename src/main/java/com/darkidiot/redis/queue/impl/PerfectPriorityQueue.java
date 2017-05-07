@@ -44,13 +44,15 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
         this.jedis = jedis;
     }
 
+    @SafeVarargs
     @Override
-    public boolean enqueue(@SuppressWarnings("unchecked") final T... members) throws RedisException {
+    public final boolean enqueue(@SuppressWarnings("unchecked") final T... members) throws RedisException {
         return enqueue(Integer.MIN_VALUE, members);
     }
 
+    @SafeVarargs
     @Override
-    public boolean enqueue(final int priority, @SuppressWarnings("unchecked") final T... members) throws RedisException {
+    public final boolean enqueue(final int priority, @SuppressWarnings("unchecked") final T... members) throws RedisException {
         if (members == null || members.length == 0) {
             return false;
         }
@@ -127,7 +129,6 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
         }
         return retNum;
     }
-}
 
     @Override
     public boolean isEmpty() throws RedisException {
@@ -148,3 +149,4 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
         }
         return delNum == 1 || delNum == 0;
     }
+}

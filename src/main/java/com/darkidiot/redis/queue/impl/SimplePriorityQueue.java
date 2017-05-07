@@ -1,5 +1,6 @@
 package com.darkidiot.redis.queue.impl;
 
+import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
@@ -8,13 +9,9 @@ import com.darkidiot.redis.util.CommonUtil.Callback;
 import com.darkidiot.redis.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.util.Pool;
 
 import java.io.Serializable;
 import java.util.List;
-
-import static com.darkidiot.redis.util.CommonUtil.invoke;
 
 /**
  * 简单的优先级队列(采用高优先级队列与低优先级队列二级优先级实现, 支持同一优先级队列先进先出)
@@ -43,110 +40,96 @@ public class SimplePriorityQueue<T extends Serializable> implements Queue<T> {
         this.name = name;
     }
 
+    @SafeVarargs
     @Override
-    public boolean enqueue(@SuppressWarnings("unchecked") final T... members) throws RedisException {
+    public final boolean enqueue(final T... members) throws RedisException {
         return enqueue(-1, members);
     }
 
     /**
      * 双队列优先级队列,正数代表高优先级队列,负数或零代表低优先级队列.
      */
+    @SafeVarargs
     @Override
-    public boolean enqueue(final int priority, @SuppressWarnings("unchecked") final T... members) throws RedisException {
+    public final boolean enqueue(final int priority, @SuppressWarnings("unchecked") final T... members) throws RedisException {
         if (members == null || members.length == 0) {
             return false;
         }
-        try {
-            return invoke(new Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultEnqueueTimeout;
-                    long retNum;
-                    if (priority > 0) {
-                        retNum = jedis.lpush(Constants.createKey(highlyPriorityQueue + name), ByteObjectConvertUtil.getBytesFromObject(members));
-                    } else {
-                        retNum = jedis.lpush(Constants.createKey(lowlyPriorityQueue + name), ByteObjectConvertUtil.getBytesFromObject(members));
-                    }
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Enqueue SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return retNum == members.length;
+        return jedis.callOriginalJedis(new Callback<Boolean>() {
+            @Override
+            public Boolean call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultEnqueueTimeout;
+                long retNum;
+                if (priority > 0) {
+                    retNum = jedis.lpush(Constants.createKey(highlyPriorityQueue + name), ByteObjectConvertUtil.getBytesFromObject(members));
+                } else {
+                    retNum = jedis.lpush(Constants.createKey(lowlyPriorityQueue + name), ByteObjectConvertUtil.getBytesFromObject(members));
                 }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return false;
-        }
+                if (System.currentTimeMillis() > end) {
+                    log.warn("Enqueue SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                }
+                return retNum == members.length;
+            }
+        }, JedisType.WRITE);
     }
 
     @Override
     public T dequeue() throws RedisException {
-        try {
-            return invoke(new Callback<T>() {
-                @SuppressWarnings("unchecked")
-                @Override
-                public T call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultDequeueTimeout;
-                    List<String> retList = jedis.brpop(Constants.createKey(highlyPriorityQueue + name), String.valueOf(0), Constants.createKey(lowlyPriorityQueue + name), String.valueOf(0));
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Dequeue SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    String retStr = retList.get(1);
-                    if (StringUtil.isNotEmpty(retStr)) {
-                        Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(retStr);
-                        return (T) objects[0];
-                    }
-                    return null;
+        return jedis.callOriginalJedis(new Callback<T>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public T call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultDequeueTimeout;
+                List<String> retList = jedis.brpop(Constants.createKey(highlyPriorityQueue + name), String.valueOf(0), Constants.createKey(lowlyPriorityQueue + name), String.valueOf(0));
+                if (System.currentTimeMillis() > end) {
+                    log.warn("Dequeue SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                 }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return null;
-        }
+                String retStr = retList.get(1);
+                if (StringUtil.isNotEmpty(retStr)) {
+                    Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(retStr);
+                    return (T) objects[0];
+                }
+                return null;
+            }
+        }, JedisType.WRITE);
     }
 
     @Override
     public T top() throws RedisException {
-        try {
-            return invoke(new Callback<T>() {
-                @Override
-                @SuppressWarnings("unchecked")
-                public T call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
-                    String top = jedis.lindex(Constants.createKey(highlyPriorityQueue + name), -1);
-                    if (top == null) {
-                        top = jedis.lindex(Constants.createKey(lowlyPriorityQueue + name), -1);
-                    }
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Top SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    if (StringUtil.isNotEmpty(top)) {
-                        Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(top);
-                        return (T) objects[0];
-                    }
-                    return null;
+        return jedis.callOriginalJedis(new Callback<T>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public T call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultTopQueueTimeout;
+                String top = jedis.lindex(Constants.createKey(highlyPriorityQueue + name), -1);
+                if (top == null) {
+                    top = jedis.lindex(Constants.createKey(lowlyPriorityQueue + name), -1);
                 }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return null;
-        }
+                if (System.currentTimeMillis() > end) {
+                    log.warn("Top SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                }
+                if (StringUtil.isNotEmpty(top)) {
+                    Object[] objects = (Object[]) ByteObjectConvertUtil.getObjectFromBytes(top);
+                    return (T) objects[0];
+                }
+                return null;
+            }
+        }, JedisType.WRITE);
     }
 
     @Override
     public long size() throws RedisException {
-        try {
-            return invoke(new Callback<Long>() {
-                @Override
-                public Long call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultQueryQueueSzieTimeout;
-                    Long size = jedis.llen(Constants.createKey(highlyPriorityQueue + name)) + jedis.llen(Constants.createKey(lowlyPriorityQueue + name));
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Query SimplePriorityQueue size time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return size;
+        return jedis.callOriginalJedis(new Callback<Long>() {
+            @Override
+            public Long call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultQueryQueueSzieTimeout;
+                Long size = jedis.llen(Constants.createKey(highlyPriorityQueue + name)) + jedis.llen(Constants.createKey(lowlyPriorityQueue + name));
+                if (System.currentTimeMillis() > end) {
+                    log.warn("Query SimplePriorityQueue size time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                 }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return -1L;
-        }
+                return size;
+            }
+        }, JedisType.WRITE);
     }
 
     @Override
@@ -156,21 +139,17 @@ public class SimplePriorityQueue<T extends Serializable> implements Queue<T> {
 
     @Override
     public boolean clear() throws RedisException {
-        try {
-            return invoke(new Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultClearQueueTimeout;
-                    Long delNum = jedis.del(Constants.createKey(highlyPriorityQueue + name), Constants.createKey(lowlyPriorityQueue + name));
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Clear SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return delNum == 2 || delNum == 1 || delNum == 0;
+        return jedis.callOriginalJedis(new Callback<Boolean>() {
+            @Override
+            public Boolean call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultClearQueueTimeout;
+                Long delNum = jedis.del(Constants.createKey(highlyPriorityQueue + name), Constants.createKey(lowlyPriorityQueue + name));
+                if (System.currentTimeMillis() > end) {
+                    log.warn("Clear SimplePriorityQueue time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                 }
-            }, pool);
-        } catch (JedisException jedisException) {
-            return false;
-        }
+                return delNum == 2 || delNum == 1 || delNum == 0;
+            }
+        }, JedisType.WRITE);
     }
 
     @Override

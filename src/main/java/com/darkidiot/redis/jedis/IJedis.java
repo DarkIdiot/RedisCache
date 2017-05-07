@@ -218,4 +218,6 @@ public interface IJedis {
     long ttl(final byte[] key);
 
     long ttl(final String key);
+
+    long zlexcount(String key, String s, String s1);
 }

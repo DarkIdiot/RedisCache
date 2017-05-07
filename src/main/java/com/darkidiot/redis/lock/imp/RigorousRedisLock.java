@@ -11,6 +11,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisException;
 
+import java.util.Random;
+
 import static com.darkidiot.redis.common.JedisType.WRITE;
 import static com.darkidiot.redis.lock.imp.Constants.defaultAcquireLockTimeout;
 import static com.darkidiot.redis.lock.imp.Constants.defaultLockTimeout;
@@ -65,12 +67,13 @@ public class RigorousRedisLock implements Lock {
                     }
                     jedis.unwatch();
                     try {
-                        Thread.sleep(Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++));
+                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++));
+                        if (System.currentTimeMillis() > end) {
+                            log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
+                        }
+                        Thread.sleep(sleepMillis);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
-                    }
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
                 }
             }

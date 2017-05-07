@@ -80,13 +80,13 @@ public class SimpleRedisLock implements Lock {
                     }
 
                     try {
-                        Thread.sleep(Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++)));
+                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++));
+                        if (System.currentTimeMillis() > end) {
+                            log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
+                        }
+                        Thread.sleep(sleepMillis);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
-                    }
-
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
                 }
                 return identifier;
@@ -112,7 +112,7 @@ public class SimpleRedisLock implements Lock {
                     }
                     return true;
                 }
-                return false;
+                throw new RedisException("Release the SimpleRedisLock error, the lock was robbed.");
             }
         }, WRITE);
     }

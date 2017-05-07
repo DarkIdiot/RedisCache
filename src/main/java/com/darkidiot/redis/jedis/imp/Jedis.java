@@ -1090,4 +1090,14 @@ public class Jedis implements IJedis {
             }
         }, READ);
     }
+
+    @Override
+    public long zlexcount(final String key, final String s, final String s1) {
+        return handle(new Callback<Long>() {
+            @Override
+            public Long call(redis.clients.jedis.Jedis jedis) {
+                return jedis.zlexcount(key, s, s1);
+            }
+        }, READ);
+    }
 }

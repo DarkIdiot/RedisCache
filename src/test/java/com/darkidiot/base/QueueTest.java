@@ -1,34 +1,32 @@
 package com.darkidiot.base;
 
+import com.darkidiot.redis.config.JedisPoolFactory;
+import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.queue.Queue;
 import com.darkidiot.redis.queue.impl.PerfectPriorityQueue;
 import com.darkidiot.redis.queue.impl.RoughPriorityQueue;
 import com.darkidiot.redis.queue.impl.SimpleFifoQueue;
 import com.darkidiot.redis.queue.impl.SimplePriorityQueue;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 @FixMethodOrder(MethodSorters.JVM)
 @Slf4j
 public class QueueTest {
-    private static JedisPool pool;
-
-    private int testCount = 2; // 2000、5000、10000
+    private static IJedis jedis;
+    private static String service = "redis";
+    private int testCount = 2000;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        pool = new JedisPool("127.0.0.1", 6379);
+        jedis = new com.darkidiot.redis.jedis.imp.Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
     }
 
     /**
@@ -36,11 +34,8 @@ public class QueueTest {
      */
     @Test
     public void testSimpleFifoQueue() {
-        Jedis resource = pool.getResource();
-        resource.del("Queue:Simple Fifo Queue");
-        resource.close();
         int n = testCount;
-        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -65,7 +60,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue2() {
         int n = testCount;
-        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -89,7 +84,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue3() {
         int n = testCount;
-        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<Person> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -113,7 +108,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue4() {
         int n = testCount;
-        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -137,7 +132,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue5() {
         int n = testCount;
-        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -161,7 +156,7 @@ public class QueueTest {
     @Test
     public void testSimpleFifoQueue6() {
         int n = testCount;
-        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", pool);
+        final Queue<String> queue = new SimpleFifoQueue<>("Simple Fifo Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -188,12 +183,8 @@ public class QueueTest {
 
     @Test
     public void testSimplePriorityQueue() {
-        Jedis resource = pool.getResource();
-        resource.del("Queue:Lowly Priority Queue:Simple Priority Queue");
-        resource.del("Queue:Highly Priority Queue:Simple Priority Queue");
-        resource.close();
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(2 * n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -227,7 +218,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue2() {
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -251,7 +242,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue3() {
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -275,7 +266,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue4() {
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -299,7 +290,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue5() {
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -323,7 +314,7 @@ public class QueueTest {
     @Test
     public void testSimplePriorityQueue6() {
         int n = testCount;
-        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", pool);
+        final Queue<Person> queue = new SimplePriorityQueue<>("Simple Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -351,14 +342,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue() {
         int n = testCount;
-        Jedis resource = pool.getResource();
-        ArrayList<String> list = Lists.newArrayList();
-        for (int i = 0; i < n; i++) {
-            list.add("Queue:Rough Priority Queue:" + i);
-        }
-        resource.del(list.toArray(new String[list.size()]));
-        resource.close();
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -384,7 +368,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue2() {
         int n = testCount;
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -408,7 +392,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue3() {
         int n = testCount;
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -432,7 +416,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue4() {
         int n = testCount;
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -456,7 +440,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue5() {
         int n = testCount;
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -480,7 +464,7 @@ public class QueueTest {
     @Test
     public void testRoughPriorityQueue6() {
         int n = testCount;
-        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", pool);
+        final Queue<Person> queue = new RoughPriorityQueue<>("Rough Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -508,10 +492,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue() {
         int n = testCount;
-        Jedis resource = pool.getResource();
-        resource.del("Queue:Perfect Priority Queue");
-        resource.close();
-        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -536,10 +517,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue1() {
         int n = testCount;
-        Jedis resource = pool.getResource();
-        resource.del("Queue:Perfect Priority Queue");
-        resource.close();
-        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -566,7 +544,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue2() {
         int n = testCount;
-        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<Person> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -590,7 +568,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue3() {
         int n = testCount;
-        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -614,7 +592,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue4() {
         int n = testCount;
-        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -638,7 +616,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue5() {
         int n = testCount;
-        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -662,7 +640,7 @@ public class QueueTest {
     @Test
     public void testPerfectPriorityQueue6() {
         int n = testCount;
-        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", pool);
+        final Queue<String> queue = new PerfectPriorityQueue<>("Perfect Priority Queue", jedis);
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
         for (int i = 0; i < n; i++) {
@@ -695,7 +673,6 @@ public class QueueTest {
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        pool.destroy();
     }
 
     static class Person implements Serializable {

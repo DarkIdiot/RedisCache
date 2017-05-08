@@ -1,42 +1,39 @@
 package com.darkidiot.base;
 
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
-
+import com.darkidiot.redis.config.JedisPoolFactory;
+import com.darkidiot.redis.jedis.IJedis;
+import com.darkidiot.redis.jedis.imp.Jedis;
+import com.darkidiot.redis.lock.Lock;
+import com.darkidiot.redis.lock.imp.RigorousRedisLock;
+import com.darkidiot.redis.lock.imp.StrictRedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.darkidiot.redis.lock.Lock;
-import com.darkidiot.redis.lock.imp.RigorousRedisLock;
-import com.darkidiot.redis.lock.imp.StrictRedisLock;
-
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class InventoryImitationTest {
 
-    private static JedisPool pool;
+    private static IJedis jedis;
+    private static String service = "redis";
 
     private int ThreadCount = 10000; //20000、5000、1000
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        pool = new JedisPool("127.0.0.1", 6379);
-        Jedis resource = pool.getResource();
-        resource.set("Count", "10000");
+        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
-        pool.destroy();
     }
 
     @Test
     public void testStrictLock4Inventory() {
-        final Lock lock = new StrictRedisLock(pool, "Strict RedisLock");
+        final Lock lock = new StrictRedisLock(jedis, "Strict RedisLock");
         int n = ThreadCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
@@ -44,21 +41,11 @@ public class InventoryImitationTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-
                     String identifier = lock.lock();
-                    Jedis resource = pool.getResource();
                     log.info(Thread.currentThread() + ":" + identifier);
-                    String count = resource.get("Count");
                     int minus = new Random().nextInt(15);
-                    log.info(Thread.currentThread() + ":" + count + " minus by " + minus);
-                    if (minus < Integer.valueOf(count)) {
-                        resource.set("Count", Integer.valueOf(count) - minus + "");
-                    } else {
-                        log.warn(Thread.currentThread() + ":" + "low stocks! Inventory has " + Integer.valueOf(count) + ". can not minus " + minus + ".");
-                    }
                     boolean unlockFlag = lock.unlock(identifier);
                     log.info(Thread.currentThread() + ":" + unlockFlag);
-                    resource.close();
                     countDownLatch.countDown();
                 }
             }).start();
@@ -80,7 +67,7 @@ public class InventoryImitationTest {
 
     @Test
     public void testRigorousLock4Inventory() {
-        final Lock lock = new RigorousRedisLock(pool, "Rigorous RedisLock");
+        final Lock lock = new RigorousRedisLock(jedis, "Rigorous RedisLock");
         int n = ThreadCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
@@ -89,19 +76,10 @@ public class InventoryImitationTest {
                 @Override
                 public void run() {
                     String identifier = lock.lock();
-                    Jedis resource = pool.getResource();
                     log.info(Thread.currentThread() + ":" + identifier);
-                    String count = resource.get("Count");
                     int minus = new Random().nextInt(15);
-                    log.info(Thread.currentThread() + ":" + count + " minus by " + minus);
-                    if (minus < Integer.valueOf(count)) {
-                        resource.set("Count", Integer.valueOf(count) - minus + "");
-                    } else {
-                        log.warn(Thread.currentThread() + ":" + "low stocks! Inventory has " + Integer.valueOf(count) + ". can not minus " + minus + ".");
-                    }
                     boolean unlockFlag = lock.unlock(identifier);
                     log.info(Thread.currentThread() + ":" + unlockFlag);
-                    resource.close();
                     countDownLatch.countDown();
                 }
             }).start();

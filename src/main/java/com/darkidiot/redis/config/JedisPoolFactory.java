@@ -458,10 +458,6 @@ public class JedisPoolFactory {
         return redisParamMap.get(service);
     }
 
-    public static Map<String, RedisInitParam> getredisParamMap() {
-        return redisParamMap;
-    }
-
     private static long getLongWithDefault(Long value, long defaultValue) {
         return value == null ? defaultValue : value;
     }

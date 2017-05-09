@@ -45,7 +45,7 @@ public interface RedisPropertyConstants {
     /** JedisPool链接超时时间 */
     String PKEY_TIMEOUT_IN_MILLIS = "%s.timeoutInMillis";
     /** 最大活跃jedis实例数量 */
-    String PKEY_MAX_TOTAL = "%s.maxActive";
+    String PKEY_MAX_TOTAL = "%s.maxTotal";
     /** 控制一个pool最多有多少个状态为idle的jedis实例 */
     String PKEY_MAX_IDLE = "%s.maxIdle";
     /** 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException */

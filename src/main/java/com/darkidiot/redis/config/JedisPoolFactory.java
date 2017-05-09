@@ -349,7 +349,7 @@ public class JedisPoolFactory {
         String serviceName = R$W ? service + READ_SUFFIX : service;
         Semaphore semaphore = semaphoreMap.get(serviceName);
         if (semaphore == null) {
-            semaphore = new Semaphore(config.getMaxTotalR(),true);
+            semaphore = new Semaphore(getIntWithDefault(config.getMaxTotalR(), DEFAULT_MAX_TOTAL), true);
             semaphoreMap.put(serviceName, semaphore);
         }
         return semaphore;
@@ -361,7 +361,7 @@ public class JedisPoolFactory {
         String serviceName = R$W ? service + WRITE_SUFFIX : service;
         Semaphore semaphore = semaphoreMap.get(serviceName);
         if (semaphore == null) {
-            semaphore = new Semaphore(config.getMaxTotalW(),true);
+            semaphore = new Semaphore(getIntWithDefault(config.getMaxTotalW(), DEFAULT_MAX_TOTAL), true);
             semaphoreMap.put(serviceName, semaphore);
         }
         return semaphore;

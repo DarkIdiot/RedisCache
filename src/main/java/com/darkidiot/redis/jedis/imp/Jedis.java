@@ -4,7 +4,6 @@ import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.config.RedisInitParam;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
-import com.darkidiot.redis.util.CommonUtil;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import redis.clients.jedis.BinaryClient;
@@ -15,7 +14,6 @@ import redis.clients.util.Pool;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
 import static com.darkidiot.redis.common.JedisType.READ;
 import static com.darkidiot.redis.common.JedisType.WRITE;
@@ -39,25 +37,14 @@ public class Jedis implements IJedis {
      */
     private Pool readJedisPool;
 
-    /**
-     * 读线程控制器
-     */
-    private Semaphore readSemaphore;
-    /**
-     * 写线程控制器
-     */
-    private Semaphore writeSemaphore;
-
     private RedisInitParam baseConfig;
 
-    public Jedis(Pool writeJedisPool, Pool readJedisPool, RedisInitParam baseConfig, Semaphore readSemaphore, Semaphore writeSemaphore) {
+    public Jedis(Pool writeJedisPool, Pool readJedisPool, RedisInitParam baseConfig) {
         if (writeJedisPool == null && readJedisPool == null) {
             throw new IllegalArgumentException("writeRedisPool and readRedisPool can not both null.");
         }
         this.readJedisPool = readJedisPool;
         this.writeJedisPool = writeJedisPool;
-        this.readSemaphore = readSemaphore;
-        this.writeSemaphore = writeSemaphore;
         this.baseConfig = baseConfig;
     }
 
@@ -87,31 +74,8 @@ public class Jedis implements IJedis {
         }
     }
 
-    /**
-     * 根据读写类型获取不同的Semaphore
-     *
-     * @param type
-     * @return
-     */
-    private Semaphore getSemaphoreByType(JedisType type) {
-        switch (type) {
-            case READ:
-                if (readSemaphore != null) {
-                    return readSemaphore;
-                }
-                throw new IllegalStateException("please set read redis params [maxTotal] before you use it!");
-            case WRITE:
-                if (writeSemaphore != null) {
-                    return writeSemaphore;
-                }
-                throw new IllegalStateException("please set write redis params [maxTotal] before you use it!");
-            default:
-                throw new IllegalArgumentException("JedisType parameter error, use as: READ|WRITE.");
-        }
-    }
-
     private <T> T handle(Callback<T> call, JedisType type) {
-        return invoke(call, getPoolByType(type), getSemaphoreByType(type));
+        return invoke(call, getPoolByType(type));
     }
 
     @Override
@@ -1026,7 +990,7 @@ public class Jedis implements IJedis {
 
     @Override
     public <T> T callOriginalJedis(Callback<T> callback, JedisType type) {
-        return invoke(callback, getPoolByType(type), getSemaphoreByType(type));
+        return invoke(callback, getPoolByType(type));
     }
 
     @Override

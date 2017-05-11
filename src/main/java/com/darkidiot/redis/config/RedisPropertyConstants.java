@@ -9,7 +9,7 @@ public interface RedisPropertyConstants {
 
     String CONFIG_PROPERTY_NAME = "redis.properties";
 
-    String PKEY_SERVIES = "service.names";
+    String PKEY_SERVICES = "service.names";
     /** redis 默认服务 */
     String DEFAULT_SERVICE_KEY = "redis";
     String DEFAULT_GROUP_KEY = "common";

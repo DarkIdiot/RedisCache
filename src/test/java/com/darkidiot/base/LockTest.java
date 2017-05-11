@@ -2,6 +2,7 @@ package com.darkidiot.base;
 
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.jedis.IJedis;
+import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
@@ -21,7 +22,7 @@ public class LockTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        jedis = new com.darkidiot.redis.jedis.imp.Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
+        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
     }
 
     @AfterClass

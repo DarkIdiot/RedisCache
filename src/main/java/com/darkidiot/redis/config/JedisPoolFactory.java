@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +31,6 @@ public class JedisPoolFactory {
     private static Map<String, RedisInitParam> redisParamMap = Maps.newHashMap();
 
     private static HashMap<String, Pool<redis.clients.jedis.Jedis>> poolMap = Maps.newHashMap();
-
-    private static HashMap<String, Semaphore> semaphoreMap = Maps.newHashMap();
 
     private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
 
@@ -66,7 +63,7 @@ public class JedisPoolFactory {
         }
 
         Set<String> serviceNames = Sets.newHashSet();
-        String services = conf.getProperty(PKEY_SERVIES);
+        String services = conf.getProperty(PKEY_SERVICES);
         if (!StringUtil.isNotEmpty(services)) {
             log.info("RedisCache get configuration[service.names] -> {}", services);
             serviceNames.addAll(commaSplitter.splitToList(services));
@@ -325,10 +322,6 @@ public class JedisPoolFactory {
     private final static String READ_SUFFIX = "-read";
     private final static String WRITE_SUFFIX = "-write";
 
-    public static RedisInitParam getRedisInitParam(String service) {
-        return redisParamMap.get(service);
-    }
-
     @SuppressWarnings("unchecked")
     public static Pool getReadPool(String service) {
         RedisInitParam config = redisParamMap.get(service);
@@ -341,30 +334,6 @@ public class JedisPoolFactory {
             log.debug("store the Jedis Pool Instance [name={}] to HashMap.", serviceName);
         }
         return readPool;
-    }
-
-    public static Semaphore getReadSemaphore(String service) {
-        RedisInitParam config = redisParamMap.get(service);
-        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
-        String serviceName = R$W ? service + READ_SUFFIX : service;
-        Semaphore semaphore = semaphoreMap.get(serviceName);
-        if (semaphore == null) {
-            semaphore = new Semaphore(getIntWithDefault(config.getMaxTotalR(), DEFAULT_MAX_TOTAL), true);
-            semaphoreMap.put(serviceName, semaphore);
-        }
-        return semaphore;
-    }
-
-    public static Semaphore getWriteSemaphore(String service) {
-        RedisInitParam config = redisParamMap.get(service);
-        Boolean R$W = getBooleanWithDefault(config.getR$WSeparated(), DEFAULT_R$W_SEPARATED);
-        String serviceName = R$W ? service + WRITE_SUFFIX : service;
-        Semaphore semaphore = semaphoreMap.get(serviceName);
-        if (semaphore == null) {
-            semaphore = new Semaphore(getIntWithDefault(config.getMaxTotalW(), DEFAULT_MAX_TOTAL), true);
-            semaphoreMap.put(serviceName, semaphore);
-        }
-        return semaphore;
     }
 
     @SuppressWarnings("unchecked")
@@ -418,7 +387,7 @@ public class JedisPoolFactory {
                 Pattern pattern = Pattern.compile(IP_PORT_PASSWORD);
                 Matcher matcher = pattern.matcher(ipPortPwd);
                 if (!matcher.matches()) {
-                    throw new IllegalArgumentException("Your redis configuration of " + mode + " is not formated as: ip:port?password.");
+                    throw new IllegalArgumentException("Your redis configuration of " + mode + " is not format as: ip:port?password.");
                 }
                 redisHost = matcher.group(1);
                 redisPort = Integer.parseInt(matcher.group(2));

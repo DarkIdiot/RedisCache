@@ -42,7 +42,7 @@ public class SimpleRedisLock implements Lock {
     @Override
     public String lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
         if (acquireTimeout < 0 || lockTimeout < -1) {
-            throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
+            throw new RedisException("acquireTimeout can not be negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(name);
         final String value = UUIDUtil.generateShortUUID();

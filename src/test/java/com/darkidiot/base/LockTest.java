@@ -3,6 +3,7 @@ package com.darkidiot.base;
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
+import com.darkidiot.redis.lock.RedisLock;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
 import com.darkidiot.redis.lock.imp.StrictRedisLock;
@@ -15,13 +16,10 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private static IJedis jedis;
-    private static String service = "redis";
     private int testCount = 2000;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        jedis = new com.darkidiot.redis.jedis.imp.Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
     }
 
     @AfterClass
@@ -30,7 +28,7 @@ public class LockTest {
 
     @Test
     public void testSimpleLock() {
-        final Lock lock = new SimpleRedisLock(jedis, "Simple RedisLock");
+        final Lock lock = RedisLock.useSimpleRedisLock("Simple RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
@@ -67,7 +65,7 @@ public class LockTest {
 
     @Test
     public void testStrictLock() {
-        final Lock lock = new StrictRedisLock(jedis, "Strict RedisLock");
+        final Lock lock = RedisLock.useStrictRedisLock("Strict RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
@@ -100,7 +98,7 @@ public class LockTest {
 
     @Test
     public void testRigorousLock() {
-        final Lock lock = new RigorousRedisLock(jedis, "Rigorous RedisLock");
+        final Lock lock = RedisLock.useRigorousRedisLock("Rigorous RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();

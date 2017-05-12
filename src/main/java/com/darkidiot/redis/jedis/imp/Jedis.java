@@ -4,7 +4,6 @@ import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.config.RedisInitParam;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.util.ByteObjectConvertUtil;
-import com.darkidiot.redis.util.CommonUtil;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import redis.clients.jedis.BinaryClient;

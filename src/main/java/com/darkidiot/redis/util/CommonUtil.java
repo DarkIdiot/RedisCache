@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.util.Pool;
 
-import java.util.concurrent.Semaphore;
-
 /**
  * Redis 公用Util
  *
@@ -21,6 +19,10 @@ public final class CommonUtil {
         try (Jedis jedis = (Jedis) pool.getResource()) {
             return call.call(jedis);
         }
+    }
+
+    public static <T> T invoke2(Callback<T> call, Jedis jedis) {
+        return call.call(jedis);
     }
 
     public interface Callback<T> {

@@ -30,7 +30,7 @@ public class JedisPoolFactory {
 
     private static Map<String, RedisInitParam> redisParamMap = Maps.newHashMap();
 
-    private static HashMap<String, Pool<redis.clients.jedis.Jedis>> poolMap = Maps.newHashMap();
+    private static HashMap<String, Pool> poolMap = Maps.newHashMap();
 
     private static Splitter commaSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
 
@@ -42,7 +42,7 @@ public class JedisPoolFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
-                for (Entry<String, Pool<redis.clients.jedis.Jedis>> entry : poolMap.entrySet()) {
+                for (Entry<String, Pool> entry : poolMap.entrySet()) {
                     Pool pool = entry.getValue();
                     log.info("The JedisPool: {} will be destroyed.", pool);
                     pool.destroy();

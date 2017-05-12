@@ -17,8 +17,7 @@ import java.util.Set;
 
 import static com.darkidiot.redis.common.JedisType.READ;
 import static com.darkidiot.redis.common.JedisType.WRITE;
-import static com.darkidiot.redis.util.CommonUtil.Callback;
-import static com.darkidiot.redis.util.CommonUtil.invoke;
+import static com.darkidiot.redis.util.CommonUtil.*;
 
 /**
  * Redis缓存实现类，支持读写分离(链接自动关闭)
@@ -38,6 +37,8 @@ public class Jedis implements IJedis {
     private Pool readJedisPool;
 
     private RedisInitParam baseConfig;
+
+    private ThreadLocal<redis.clients.jedis.Jedis> threadJedis = new ThreadLocal<>();
 
     public Jedis(Pool writeJedisPool, Pool readJedisPool, RedisInitParam baseConfig) {
         if (writeJedisPool == null && readJedisPool == null) {
@@ -991,6 +992,16 @@ public class Jedis implements IJedis {
     @Override
     public <T> T callOriginalJedis(Callback<T> callback, JedisType type) {
         return invoke(callback, getPoolByType(type));
+    }
+
+    @Override
+    public <T> T callOriginalJedisWithoutCloseJedis(Callback<T> callback, JedisType type) {
+        redis.clients.jedis.Jedis jedis = threadJedis.get();
+        if (jedis == null) {
+            jedis = (redis.clients.jedis.Jedis) getPoolByType(type).getResource();
+            threadJedis.set(jedis);
+        }
+        return invoke2(callback, jedis);
     }
 
     @Override

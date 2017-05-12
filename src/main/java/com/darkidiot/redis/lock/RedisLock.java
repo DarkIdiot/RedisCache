@@ -16,9 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_SERVICE_KEY;
 
 /**
- * Redis Lock 工厂类
+ * Redis Lock 工厂类<br>
+ * <b>Notice:<b/>
  * <ul>
- * <li>Notice: 采用享元模式， 同一个进程在多线程环境下去获取同名的锁总是返回单一实例.</li>
+ * <li>采用享元模式， 同一个进程在多线程环境下去获取同名的锁总是返回单一实例.</li>
+ * <li>redis锁支持2000级别并发,超出需要进行redis参数调优完成支持</li>
  * </ul>
  *
  * @author darkidiot
@@ -79,7 +81,7 @@ public class RedisLock {
         String key = createKey(lockname, prefix);
         Lock lock = LockMap.get(key);
         if (lock == null) {
-            lock = callback.call(new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service)));
+            lock = callback.call(new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service)));
             LockMap.put(key, lock);
         }
         return lock;

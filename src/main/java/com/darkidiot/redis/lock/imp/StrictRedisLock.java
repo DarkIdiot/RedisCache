@@ -9,7 +9,8 @@ import com.darkidiot.redis.util.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
-import redis.clients.jedis.exceptions.JedisException;
+
+import java.util.Random;
 
 import static com.darkidiot.redis.common.JedisType.WRITE;
 import static com.darkidiot.redis.util.CommonUtil.Callback;
@@ -50,7 +51,7 @@ public class StrictRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         final String value = UUIDUtil.generateShortUUID();
-        return jedis.callOriginalJedis(new Callback<String>() {
+        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 int lockExpire = (int) (lockTimeout);
@@ -69,9 +70,9 @@ public class StrictRedisLock implements Lock {
                         }
                     }
                     try {
-                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * FibonacciUtil.circulationFibonacciNormal(i++);
+                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(++i > 15 ? 15 : i));
                         if (System.currentTimeMillis() > end) {
-                            log.warn("Acquire RigorousRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
+                            log.warn("Acquire StrictRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
                         }
                         Thread.sleep(sleepMillis);
                     } catch (InterruptedException ie) {
@@ -93,23 +94,23 @@ public class StrictRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        try {
-            return jedis.callOriginalJedis(new Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
+        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<Boolean>() {
+            @Override
+            public Boolean call(Jedis jedis) {
+                long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
+                try {
                     if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
                         if (System.currentTimeMillis() > end) {
                             log.warn("Release StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                         }
                         return true;
                     }
-                    return false;
+                } finally {
+                    jedis.close();
                 }
-            }, WRITE);
-        } catch (JedisException je) {
-            return false;
-        }
+                throw new RedisException("Release the StrictRedisLock error, the lock was robbed.");
+            }
+        }, WRITE);
     }
 
     @Override
@@ -117,23 +118,13 @@ public class StrictRedisLock implements Lock {
         if (StringUtil.isEmpty(identifier)) {
             throw new RedisException("identifier can not be empty.");
         }
-        final String lockKey = Constants.createKey(this.name);
-        try {
-            return jedis.callOriginalJedis(new Callback<Boolean>() {
-                @Override
-                public Boolean call(Jedis jedis) {
-                    String retStr;
-                    long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
-                    retStr = jedis.get(lockKey);
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Checking StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                    }
-                    return retStr != null && !retStr.equals(Constants.LOCK_UNLOCK);
-                }
-            }, WRITE);
-        } catch (JedisException je) {
-            return false;
+        String lockKey = Constants.createKey(this.name);
+        long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
+        String retStr = jedis.get(lockKey);
+        if (System.currentTimeMillis() > end) {
+            log.warn("Checking StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }
+        return retStr != null && !retStr.equals(Constants.LOCK_UNLOCK);
     }
 
     @Override

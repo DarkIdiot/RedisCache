@@ -1,17 +1,12 @@
 package com.darkidiot.redis.config;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
+
+import com.google.common.base.Throwables;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class IPorServerConfig {
@@ -83,6 +78,9 @@ public class IPorServerConfig {
     }
 
     public static void main(String[] args) {
-        log.info("My computer's ip is:{}", getIP());
+        System.out.println("My computer's ip is:{}"+ getIP());
+        System.out.println("My computer's pid is:{}"+ getPid());
+        System.out.println("My computer's tid is:{}"+ getTid());
+        System.out.println("My computer's mac is:{}"+ getMac());
     }
 }

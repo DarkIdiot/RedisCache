@@ -9,7 +9,7 @@ public interface RedisPropertyConstants {
 
     String CONFIG_PROPERTY_NAME = "redis.properties";
 
-    String PKEY_SERVIES = "service.names";
+    String PKEY_SERVICES = "service.names";
     /** redis 默认服务 */
     String DEFAULT_SERVICE_KEY = "redis";
     String DEFAULT_GROUP_KEY = "common";
@@ -72,6 +72,6 @@ public interface RedisPropertyConstants {
     int DEFAULT_MAX_TOTAL = 8;
     int DEFAULT_MAX_IDLE = 8;
     int DEFAULT_MAX_WAIT = 10000;
-    boolean DEFAULT_TEST_ON_BORROW = false;
+    boolean DEFAULT_TEST_ON_BORROW = true;
     boolean DEFAULT_TEST_ON_RETURN = false;
 }

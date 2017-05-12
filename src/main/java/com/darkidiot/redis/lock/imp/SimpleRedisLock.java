@@ -49,7 +49,7 @@ public class SimpleRedisLock implements Lock {
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
 
-        return jedis.callOriginalJedis(new Callback<String>() {
+        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 String identifier;
@@ -80,7 +80,7 @@ public class SimpleRedisLock implements Lock {
                     }
 
                     try {
-                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(i++));
+                        long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(++i > 15 ? 15 : i));
                         if (System.currentTimeMillis() > end) {
                             log.warn("Acquire SimpleRedisLock time out. spend[ {}ms ] and await[ {}ms]", System.currentTimeMillis() - end, sleepMillis);
                         }
@@ -102,15 +102,19 @@ public class SimpleRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         final long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-        return jedis.callOriginalJedis(new Callback<Boolean>() {
+        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {
-                if (identifier.equals(jedis.get(lockKey))) {
-                    jedis.del(lockKey);
-                    if (System.currentTimeMillis() > end) {
-                        log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                try {
+                    if (identifier.equals(jedis.get(lockKey))) {
+                        jedis.del(lockKey);
+                        if (System.currentTimeMillis() > end) {
+                            log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
+                        }
+                        return true;
                     }
-                    return true;
+                } finally {
+                    jedis.close();
                 }
                 throw new RedisException("Release the SimpleRedisLock error, the lock was robbed.");
             }

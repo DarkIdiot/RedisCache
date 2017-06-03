@@ -1,12 +1,7 @@
 package com.darkidiot.base;
 
-import com.darkidiot.redis.config.JedisPoolFactory;
-import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.RedisLock;
-import com.darkidiot.redis.lock.imp.RigorousRedisLock;
-import com.darkidiot.redis.lock.imp.SimpleRedisLock;
-import com.darkidiot.redis.lock.imp.StrictRedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private int testCount = 2000;
+    private int testCount = 200;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

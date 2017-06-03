@@ -24,7 +24,7 @@ public class InventoryImitationTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
+        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
     }
 
     @AfterClass

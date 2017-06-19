@@ -12,6 +12,7 @@ import redis.clients.jedis.Transaction;
 
 import java.util.Random;
 
+import static com.darkidiot.redis.common.JedisType.READ;
 import static com.darkidiot.redis.common.JedisType.WRITE;
 import static com.darkidiot.redis.util.CommonUtil.Callback;
 
@@ -49,7 +50,7 @@ public class SimpleRedisLock implements Lock {
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
 
-        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<String>() {
+        return jedis.callOriginalJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 String identifier;
@@ -102,23 +103,20 @@ public class SimpleRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         final long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<Boolean>() {
+
+        return jedis.callOriginalJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {
-                try {
-                    if (identifier.equals(jedis.get(lockKey))) {
-                        jedis.del(lockKey);
-                        if (System.currentTimeMillis() > end) {
-                            log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                        }
-                        return true;
+                if (identifier.equals(jedis.get(lockKey))) {
+                    jedis.del(lockKey);
+                    if (System.currentTimeMillis() > end) {
+                        log.warn("Release SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
-                } finally {
-                    jedis.close();
+                    return true;
                 }
                 throw new RedisException("Release the SimpleRedisLock error, the lock was robbed.");
             }
-        }, WRITE);
+        }, READ);
     }
 
     @Override

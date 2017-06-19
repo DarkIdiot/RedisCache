@@ -12,6 +12,7 @@ import redis.clients.jedis.Transaction;
 
 import java.util.Random;
 
+import static com.darkidiot.redis.common.JedisType.READ;
 import static com.darkidiot.redis.common.JedisType.WRITE;
 import static com.darkidiot.redis.lock.imp.Constants.defaultAcquireLockTimeout;
 import static com.darkidiot.redis.lock.imp.Constants.defaultLockTimeout;
@@ -49,7 +50,7 @@ public class RigorousRedisLock implements Lock {
         final String lockKey = Constants.createKey(this.name);
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
-        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<String>() {
+        return jedis.callOriginalJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 int i = 1;
@@ -91,23 +92,19 @@ public class RigorousRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        return jedis.callOriginalJedisWithoutCloseJedis(new Callback<Boolean>() {
+        return jedis.callOriginalJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {
                 long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                try {
-                    if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
-                        if (System.currentTimeMillis() > end) {
-                            log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
-                        }
-                        return true;
+                if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
+                    if (System.currentTimeMillis() > end) {
+                        log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }
-                } finally {
-                    jedis.close();
+                    return true;
                 }
                 throw new RedisException("Release the RigorousRedisLock error, the lock was robbed.");
             }
-        }, WRITE);
+        }, READ);
     }
 
     @Override

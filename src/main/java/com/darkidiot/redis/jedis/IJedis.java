@@ -22,8 +22,6 @@ public interface IJedis {
 
     <T> T callOriginalJedis(Callback<T> callback, JedisType type);
 
-    <T> T callOriginalJedisWithoutCloseJedis(Callback<T> callback, JedisType type);
-
     /**
      * 发布
      *

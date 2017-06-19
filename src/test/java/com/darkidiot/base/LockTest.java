@@ -68,11 +68,14 @@ public class LockTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    boolean unlockFlag = lock.unlock(identifier);
-                    log.info(Thread.currentThread() + ":" + unlockFlag);
-                    countDownLatch.countDown();
+                    try {
+                        String identifier = lock.lock();
+                        log.info(Thread.currentThread() + ":" + identifier);
+                        boolean unlockFlag = lock.unlock(identifier);
+                        log.info(Thread.currentThread() + ":" + unlockFlag);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
                 }
             }).start();
         }
@@ -101,11 +104,14 @@ public class LockTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    boolean unlockFlag = lock.unlock(identifier);
-                    log.info(Thread.currentThread() + ":" + unlockFlag);
-                    countDownLatch.countDown();
+                    try {
+                        String identifier = lock.lock();
+                        log.info(Thread.currentThread() + ":" + identifier);
+                        boolean unlockFlag = lock.unlock(identifier);
+                        log.info(Thread.currentThread() + ":" + unlockFlag);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
                 }
             }).start();
         }

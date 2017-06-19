@@ -151,14 +151,18 @@ public class JedisPoolFactory {
             format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName + read_prefix);
             String timeoutR = conf.getProperty(format);
             if (!StringUtil.isEmpty(timeoutR)) {
-                log.info("RedisCache set configuration[{}] -> {}", format, timeoutR);
-                redisInitParam.setTimeoutR(Integer.valueOf(timeoutR));
+                Integer timeout = Integer.valueOf(timeoutR);
+                timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                log.info("RedisCache set configuration[{}] -> {}", format, timeout);
+                redisInitParam.setTimeoutR(timeout);
             } else {
                 format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName);
                 timeoutR = conf.getProperty(format);
                 if (!StringUtil.isEmpty(timeoutR)) {
-                    log.info("RedisCache set configuration[{}] -> {}", format, timeoutR);
-                    redisInitParam.setTimeoutR(Integer.valueOf(timeoutR));
+                    Integer timeout = Integer.valueOf(timeoutR);
+                    timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                    log.info("RedisCache set configuration[{}] -> {}", format, timeout);
+                    redisInitParam.setTimeoutR(timeout);
                 }
             }
 
@@ -193,13 +197,13 @@ public class JedisPoolFactory {
             format = String.format(PKEY_MAX_WAIT, serviceName + read_prefix);
             String maxWaitMillisR = conf.getProperty(format);
             if (!StringUtil.isEmpty(maxWaitMillisR)) {
-                log.info("RedisCache set configuration[read.{}] -> {}", format, maxWaitMillisR);
+                log.info("RedisCache set configuration[read.{}] -> {}ms", format, maxWaitMillisR);
                 redisInitParam.setMaxWaitMillisR(Long.valueOf(maxWaitMillisR));
             } else {
                 format = String.format(PKEY_MAX_WAIT, serviceName);
                 maxWaitMillisR = conf.getProperty(format);
                 if (!StringUtil.isEmpty(maxWaitMillisR)) {
-                    log.info("RedisCache set configuration[read.{}] -> {}", format, maxWaitMillisR);
+                    log.info("RedisCache set configuration[read.{}] -> {}ms", format, maxWaitMillisR);
                     redisInitParam.setMaxWaitMillisR(Long.valueOf(maxWaitMillisR));
                 }
             }
@@ -235,14 +239,18 @@ public class JedisPoolFactory {
             format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName + write_prefix);
             String timeoutW = conf.getProperty(format);
             if (!StringUtil.isEmpty(timeoutW)) {
-                log.info("RedisCache set configuration[read.{}] -> {}", format, timeoutW);
-                redisInitParam.setTimeoutW(Integer.valueOf(timeoutW));
+                Integer timeout = Integer.valueOf(timeoutW);
+                timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                log.info("RedisCache set configuration[read.{}] -> {}", format, timeout);
+                redisInitParam.setTimeoutW(timeout);
             } else {
                 format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName);
                 timeoutW = conf.getProperty(format);
                 if (!StringUtil.isEmpty(timeoutW)) {
-                    log.info("RedisCache set configuration[read.{}] -> {}", format, timeoutW);
-                    redisInitParam.setTimeoutW(Integer.valueOf(timeoutW));
+                    Integer timeout = Integer.valueOf(timeoutW);
+                    timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                    log.info("RedisCache set configuration[read.{}] -> {}", format, timeout);
+                    redisInitParam.setTimeoutW(timeout);
                 }
             }
 
@@ -277,13 +285,13 @@ public class JedisPoolFactory {
             format = String.format(PKEY_MAX_WAIT, serviceName + write_prefix);
             String maxWaitMillisW = conf.getProperty(format);
             if (!StringUtil.isEmpty(maxWaitMillisW)) {
-                log.info("RedisCache set configuration[write.{}] -> {}", format, maxWaitMillisW);
+                log.info("RedisCache set configuration[write.{}] -> {}ms", format, maxWaitMillisW);
                 redisInitParam.setMaxWaitMillisW(Long.valueOf(maxWaitMillisW));
             } else {
                 format = String.format(PKEY_MAX_WAIT, serviceName);
                 maxWaitMillisW = conf.getProperty(format);
                 if (!StringUtil.isEmpty(maxWaitMillisW)) {
-                    log.info("RedisCache set configuration[write.{}] -> {}", format, maxWaitMillisW);
+                    log.info("RedisCache set configuration[write.{}] -> {}ms", format, maxWaitMillisW);
                     redisInitParam.setMaxWaitMillisW(Long.valueOf(maxWaitMillisW));
                 }
             }

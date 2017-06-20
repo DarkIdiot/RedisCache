@@ -33,11 +33,8 @@ public class LockTest {
                 public void run() {
                     try {
                         lock.lock();
-                        Thread.sleep(100);
                         boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     } finally {
                         countDownLatch.countDown();
                     }

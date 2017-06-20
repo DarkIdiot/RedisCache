@@ -33,6 +33,7 @@ public class StrictRedisLock implements Lock {
     private IJedis jedis;
     private String name;
 
+    private String identifier;
 
     public StrictRedisLock(IJedis jedis, String name) throws RedisException {
         if (jedis == null) {
@@ -46,13 +47,13 @@ public class StrictRedisLock implements Lock {
     }
 
     @Override
-    public String lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
+    public void lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
         if (acquireTimeout < 0 || lockTimeout < -1) {
             throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(this.name);
         final String value = UUIDUtil.generateShortUUID();
-        return jedis.callOriginalJedis(new Callback<String>() {
+        jedis.callOriginalJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 int lockExpire = (int) (lockTimeout);
@@ -67,6 +68,7 @@ public class StrictRedisLock implements Lock {
                         t.expire(lockKey, lockExpire);
                         String ret = (String) t.exec().get(0);
                         if (ret == null || ret.equals(Constants.LOCK_UNLOCK)) {
+                            identifier = value;
                             return value;
                         }
                     }
@@ -85,12 +87,12 @@ public class StrictRedisLock implements Lock {
     }
 
     @Override
-    public String lock() throws RedisException {
-        return lock(Constants.defaultAcquireLockTimeout, Constants.defaultLockTimeout);
+    public void lock() throws RedisException {
+        lock(Constants.defaultAcquireLockTimeout, Constants.defaultLockTimeout);
     }
 
     @Override
-    public boolean unlock(final String identifier) throws RedisException {
+    public boolean unlock() throws RedisException {
         if (StringUtil.isEmpty(identifier)) {
             throw new RedisException("identifier can not be empty.");
         }
@@ -111,7 +113,7 @@ public class StrictRedisLock implements Lock {
     }
 
     @Override
-    public boolean isLocking(String identifier) throws RedisException {
+    public boolean isLocking() throws RedisException {
         if (StringUtil.isEmpty(identifier)) {
             throw new RedisException("identifier can not be empty.");
         }

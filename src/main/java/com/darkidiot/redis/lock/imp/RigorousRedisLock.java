@@ -30,6 +30,8 @@ public class RigorousRedisLock implements Lock {
     private final IJedis jedis;
     private final String name;
 
+    private String identifier;
+
     public RigorousRedisLock(IJedis jedis, String name) throws RedisException {
         if (jedis == null) {
             throw new RedisException("Initialize RigorousRedisLock failure, And jedis can not be null.");
@@ -42,7 +44,7 @@ public class RigorousRedisLock implements Lock {
     }
 
     @Override
-    public String lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
+    public void lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
         if (acquireTimeout < 0 || lockTimeout < -1) {
             throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
         }
@@ -50,7 +52,7 @@ public class RigorousRedisLock implements Lock {
         final String lockKey = Constants.createKey(this.name);
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
-        return jedis.callOriginalJedis(new Callback<String>() {
+        jedis.callOriginalJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
                 int i = 1;
@@ -63,7 +65,8 @@ public class RigorousRedisLock implements Lock {
                         Transaction t = jedis.multi();
                         t.setex(lockKey, lockExpire, value);
                         if (t.exec() != null) {
-                            return value;
+                            identifier = value;
+                            return identifier;
                         }
                     }
                     jedis.unwatch();
@@ -82,12 +85,12 @@ public class RigorousRedisLock implements Lock {
     }
 
     @Override
-    public String lock() throws RedisException {
-        return lock(defaultAcquireLockTimeout, defaultLockTimeout);
+    public void lock() throws RedisException {
+        lock(defaultAcquireLockTimeout, defaultLockTimeout);
     }
 
     @Override
-    public boolean unlock(final String identifier) throws RedisException {
+    public boolean unlock() throws RedisException {
         if (StringUtil.isEmpty(identifier)) {
             throw new RedisException("identifier can not be empty.");
         }
@@ -108,7 +111,7 @@ public class RigorousRedisLock implements Lock {
     }
 
     @Override
-    public boolean isLocking(String identifier) throws RedisException {
+    public boolean isLocking() throws RedisException {
         if (StringUtil.isEmpty(identifier)) {
             throw new RedisException("identifier can not be empty.");
         }

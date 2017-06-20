@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private int testCount = 2000;
+    private int testCount = 1000;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -32,9 +32,8 @@ public class LockTest {
                 @Override
                 public void run() {
                     try {
-                        String identifier = lock.lock();
-                        log.info(Thread.currentThread() + ":" + identifier);
-                        boolean unlockFlag = lock.unlock(identifier);
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {
                         countDownLatch.countDown();
@@ -69,9 +68,8 @@ public class LockTest {
                 @Override
                 public void run() {
                     try {
-                        String identifier = lock.lock();
-                        log.info(Thread.currentThread() + ":" + identifier);
-                        boolean unlockFlag = lock.unlock(identifier);
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {
                         countDownLatch.countDown();
@@ -105,9 +103,8 @@ public class LockTest {
                 @Override
                 public void run() {
                     try {
-                        String identifier = lock.lock();
-                        log.info(Thread.currentThread() + ":" + identifier);
-                        boolean unlockFlag = lock.unlock(identifier);
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {
                         countDownLatch.countDown();

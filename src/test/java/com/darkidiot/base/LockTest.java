@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private int testCount = 1000;
+    private int testCount = 100;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {

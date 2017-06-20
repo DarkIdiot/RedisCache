@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -153,7 +154,7 @@ public class JedisPoolFactory {
             if (!StringUtil.isEmpty(timeoutR)) {
                 Integer timeout = Integer.valueOf(timeoutR);
                 timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
-                log.info("RedisCache set configuration[{}] -> {}", format, timeout);
+                log.info("RedisCache set configuration[{}] -> {}ms", format, timeout);
                 redisInitParam.setTimeoutR(timeout);
             } else {
                 format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName);
@@ -161,7 +162,7 @@ public class JedisPoolFactory {
                 if (!StringUtil.isEmpty(timeoutR)) {
                     Integer timeout = Integer.valueOf(timeoutR);
                     timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
-                    log.info("RedisCache set configuration[{}] -> {}", format, timeout);
+                    log.info("RedisCache set configuration[{}] -> {}ms", format, timeout);
                     redisInitParam.setTimeoutR(timeout);
                 }
             }
@@ -241,7 +242,7 @@ public class JedisPoolFactory {
             if (!StringUtil.isEmpty(timeoutW)) {
                 Integer timeout = Integer.valueOf(timeoutW);
                 timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
-                log.info("RedisCache set configuration[read.{}] -> {}", format, timeout);
+                log.info("RedisCache set configuration[read.{}] -> {}ms", format, timeout);
                 redisInitParam.setTimeoutW(timeout);
             } else {
                 format = String.format(PKEY_TIMEOUT_IN_MILLIS, serviceName);
@@ -249,7 +250,7 @@ public class JedisPoolFactory {
                 if (!StringUtil.isEmpty(timeoutW)) {
                     Integer timeout = Integer.valueOf(timeoutW);
                     timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
-                    log.info("RedisCache set configuration[read.{}] -> {}", format, timeout);
+                    log.info("RedisCache set configuration[read.{}] -> {}ms", format, timeout);
                     redisInitParam.setTimeoutW(timeout);
                 }
             }
@@ -416,7 +417,7 @@ public class JedisPoolFactory {
             long maxWaitMillis = getLongWithDefault(isRead(mode) ? initParam.getMaxWaitMillisR() : initParam.getMaxWaitMillisW(), DEFAULT_MAX_WAIT);
             int maxIdle = getIntWithDefault(isRead(mode) ? initParam.getMaxIdleR() : initParam.getMaxIdleW(), DEFAULT_MAX_IDLE);
             int maxTotal = getIntWithDefault(isRead(mode) ? initParam.getMaxTotalR() : initParam.getMaxTotalW(), DEFAULT_MAX_TOTAL);
-            int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_MAX_IDLE);
+            int timeout = getIntWithDefault(isRead(mode) ? initParam.getTimeoutR() : initParam.getTimeoutW(), DEFAULT_TIMEOUT);
             JedisPoolConfig config = new JedisPoolConfig();
             config.setTestOnBorrow(testOnBorrow);
             config.setTestOnReturn(testOnReturn);

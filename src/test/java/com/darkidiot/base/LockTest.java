@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private int testCount = 100;
+    private int testCount = 2000;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -33,8 +33,11 @@ public class LockTest {
                 public void run() {
                     try {
                         lock.lock();
+                        Thread.sleep(100);
                         boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     } finally {
                         countDownLatch.countDown();
                     }

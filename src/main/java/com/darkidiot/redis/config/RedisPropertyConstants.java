@@ -71,7 +71,7 @@ public interface RedisPropertyConstants {
     int DEFAULT_TIMEOUT = 10000;
     int DEFAULT_MAX_TOTAL = 8;
     int DEFAULT_MAX_IDLE = 8;
-    int DEFAULT_MAX_WAIT = 10000;
+    int DEFAULT_MAX_WAIT = 2000;
     boolean DEFAULT_TEST_ON_BORROW = true;
     boolean DEFAULT_TEST_ON_RETURN = false;
 }

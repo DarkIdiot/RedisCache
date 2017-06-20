@@ -153,7 +153,7 @@ public class JedisPoolFactory {
             String timeoutR = conf.getProperty(format);
             if (!StringUtil.isEmpty(timeoutR)) {
                 Integer timeout = Integer.valueOf(timeoutR);
-                timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                timeout = timeout < DEFAULT_TIMEOUT ? DEFAULT_TIMEOUT : timeout;
                 log.info("RedisCache set configuration[{}] -> {}ms", format, timeout);
                 redisInitParam.setTimeoutR(timeout);
             } else {
@@ -161,7 +161,7 @@ public class JedisPoolFactory {
                 timeoutR = conf.getProperty(format);
                 if (!StringUtil.isEmpty(timeoutR)) {
                     Integer timeout = Integer.valueOf(timeoutR);
-                    timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                    timeout = timeout < DEFAULT_TIMEOUT ? DEFAULT_TIMEOUT : timeout;
                     log.info("RedisCache set configuration[{}] -> {}ms", format, timeout);
                     redisInitParam.setTimeoutR(timeout);
                 }
@@ -241,7 +241,7 @@ public class JedisPoolFactory {
             String timeoutW = conf.getProperty(format);
             if (!StringUtil.isEmpty(timeoutW)) {
                 Integer timeout = Integer.valueOf(timeoutW);
-                timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                timeout = timeout < DEFAULT_TIMEOUT ? DEFAULT_TIMEOUT : timeout;
                 log.info("RedisCache set configuration[read.{}] -> {}ms", format, timeout);
                 redisInitParam.setTimeoutW(timeout);
             } else {
@@ -249,7 +249,7 @@ public class JedisPoolFactory {
                 timeoutW = conf.getProperty(format);
                 if (!StringUtil.isEmpty(timeoutW)) {
                     Integer timeout = Integer.valueOf(timeoutW);
-                    timeout = timeout < DEFAULT_MAX_WAIT ? DEFAULT_MAX_WAIT : timeout;
+                    timeout = timeout < DEFAULT_TIMEOUT ? DEFAULT_TIMEOUT : timeout;
                     log.info("RedisCache set configuration[read.{}] -> {}ms", format, timeout);
                     redisInitParam.setTimeoutW(timeout);
                 }

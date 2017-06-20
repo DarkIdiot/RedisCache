@@ -11,7 +11,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 @Slf4j
@@ -24,7 +23,7 @@ public class InventoryImitationTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
-        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service), JedisPoolFactory.getReadSemaphore(service), JedisPoolFactory.getWriteSemaphore(service));
+        jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
     }
 
     @AfterClass
@@ -41,10 +40,8 @@ public class InventoryImitationTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    int minus = new Random().nextInt(15);
-                    boolean unlockFlag = lock.unlock(identifier);
+                    lock.lock();
+                    boolean unlockFlag = lock.unlock();
                     log.info(Thread.currentThread() + ":" + unlockFlag);
                     countDownLatch.countDown();
                 }
@@ -75,10 +72,8 @@ public class InventoryImitationTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    int minus = new Random().nextInt(15);
-                    boolean unlockFlag = lock.unlock(identifier);
+                    lock.lock();
+                    boolean unlockFlag = lock.unlock();
                     log.info(Thread.currentThread() + ":" + unlockFlag);
                     countDownLatch.countDown();
                 }

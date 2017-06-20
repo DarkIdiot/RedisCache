@@ -21,10 +21,6 @@ public final class CommonUtil {
         }
     }
 
-    public static <T> T invoke2(Callback<T> call, Jedis jedis) {
-        return call.call(jedis);
-    }
-
     public interface Callback<T> {
         T call(Jedis jedis);
     }

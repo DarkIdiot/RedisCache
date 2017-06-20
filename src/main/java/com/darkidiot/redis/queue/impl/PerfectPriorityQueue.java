@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.darkidiot.redis.common.JedisType.READ;
 import static com.darkidiot.redis.common.JedisType.WRITE;
 import static com.darkidiot.redis.util.CommonUtil.Callback;
 
@@ -99,7 +100,7 @@ public class PerfectPriorityQueue<T extends Serializable> implements Queue<T> {
                     }
 
                 }
-            }, WRITE);
+            }, READ);
         } catch (JedisException jedisException) {
             return null;
         }

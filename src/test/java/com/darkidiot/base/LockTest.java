@@ -1,12 +1,7 @@
 package com.darkidiot.base;
 
-import com.darkidiot.redis.config.JedisPoolFactory;
-import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.RedisLock;
-import com.darkidiot.redis.lock.imp.RigorousRedisLock;
-import com.darkidiot.redis.lock.imp.SimpleRedisLock;
-import com.darkidiot.redis.lock.imp.StrictRedisLock;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,9 +32,8 @@ public class LockTest {
                 @Override
                 public void run() {
                     try {
-                        String identifier = lock.lock();
-                        log.info(Thread.currentThread() + ":" + identifier);
-                        boolean unlockFlag = lock.unlock(identifier);
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {
                         countDownLatch.countDown();
@@ -73,11 +67,13 @@ public class LockTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    boolean unlockFlag = lock.unlock(identifier);
-                    log.info(Thread.currentThread() + ":" + unlockFlag);
-                    countDownLatch.countDown();
+                    try {
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
+                        log.info(Thread.currentThread() + ":" + unlockFlag);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
                 }
             }).start();
         }
@@ -106,11 +102,13 @@ public class LockTest {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String identifier = lock.lock();
-                    log.info(Thread.currentThread() + ":" + identifier);
-                    boolean unlockFlag = lock.unlock(identifier);
-                    log.info(Thread.currentThread() + ":" + unlockFlag);
-                    countDownLatch.countDown();
+                    try {
+                        lock.lock();
+                        boolean unlockFlag = lock.unlock();
+                        log.info(Thread.currentThread() + ":" + unlockFlag);
+                    } finally {
+                        countDownLatch.countDown();
+                    }
                 }
             }).start();
         }

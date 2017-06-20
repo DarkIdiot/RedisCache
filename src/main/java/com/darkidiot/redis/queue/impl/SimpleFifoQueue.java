@@ -79,7 +79,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
                 }
                 return null;
             }
-        }, JedisType.WRITE);
+        }, JedisType.READ);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
                 }
                 return null;
             }
-        }, JedisType.WRITE);
+        }, JedisType.READ);
     }
 
     @Override
@@ -113,7 +113,7 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
                 }
                 return size;
             }
-        }, JedisType.WRITE);
+        }, JedisType.READ);
     }
 
     @Override
@@ -138,6 +138,6 @@ public class SimpleFifoQueue<T extends Serializable> implements Queue<T> {
                 }
                 return delNum == 1 || delNum == 0;
             }
-        }, JedisType.READ);
+        }, JedisType.WRITE);
     }
 }

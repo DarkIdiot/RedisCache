@@ -14,6 +14,8 @@ class Constants {
 	static final long defaultCheckLockTimeout = 3*1000L;
 
 
+    static final int maxTotal = 20;
+
 	/** 默认锁超时时间 (超时会自动释放锁) */
 	static final long defaultLockTimeout = 5 * 60L;
 	/** 获取锁失败后挂起再试的时间间隔单位(实际按斐波那契数列递增) */

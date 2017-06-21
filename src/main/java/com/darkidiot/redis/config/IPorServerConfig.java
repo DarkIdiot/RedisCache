@@ -46,7 +46,7 @@ public class IPorServerConfig {
             }
         }
         String macStr = sb.toString().toUpperCase();
-        log.debug("the mac address is : {}");
+        log.debug("the mac address is : {}",macStr);
         return macStr;
     }
 
@@ -78,9 +78,9 @@ public class IPorServerConfig {
     }
 
     public static void main(String[] args) {
-        System.out.println("My computer's ip is:{}"+ getIP());
-        System.out.println("My computer's pid is:{}"+ getPid());
-        System.out.println("My computer's tid is:{}"+ getTid());
-        System.out.println("My computer's mac is:{}"+ getMac());
+        log.info("My computer's ip is:{}" , getIP());
+        log.warn("My computer's pid is:{}" , getPid());
+        log.error("My computer's tid is:{}" , getTid());
+        log.info("My computer's mac is:{}" , getMac());
     }
 }

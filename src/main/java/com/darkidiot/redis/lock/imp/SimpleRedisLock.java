@@ -134,9 +134,8 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
-        String retStr;
         long end = System.currentTimeMillis() + Constants.defaultCheckLockTimeout;
-        retStr = jedis.get(lockKey);
+        String retStr = jedis.get(lockKey);
         if (System.currentTimeMillis() > end) {
             log.warn("Checking SimpleRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
         }

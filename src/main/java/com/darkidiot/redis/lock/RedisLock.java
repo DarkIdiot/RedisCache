@@ -19,7 +19,6 @@ import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_SERVICE_
  * Redis Lock 工厂类<br>
  * <b>Notice:<b/>
  * <ul>
- * <li>采用享元模式， 同一个进程在多线程环境下去获取同名的锁总是返回单一实例.</li>
  * <li>redis锁支持2000级别并发,超出需要进行redis参数调优完成支持</li>
  * </ul>
  *

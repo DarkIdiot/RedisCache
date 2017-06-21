@@ -1,6 +1,5 @@
 package com.darkidiot.redis.lock.imp;
 
-import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
@@ -19,8 +18,12 @@ import static com.darkidiot.redis.util.CommonUtil.Callback;
 
 /**
  * 简单的分布式锁的实现,效率较高(极端情况下，会出现多个实例同时获取到锁的 情况)
- * 堵塞式
- *
+ * 阻塞式<br/>
+ * <br/>
+ * <b>Notice:<b/>
+ * <ul>
+ * <li>不可重入锁</li>
+ * </ul>
  * @author darkidiot
  */
 @Slf4j
@@ -49,7 +52,7 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("acquireTimeout can not be negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(name);
-        final String value = IPorServerConfig.getThreadId();
+        final String value = UUIDUtil.generateShortUUID();
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
 

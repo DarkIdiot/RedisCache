@@ -26,12 +26,15 @@ class Constants {
     }
 
 
-    private static final String PKEY_LOCK_ENTRANCE_COUNT_SPLITERATOR = "-";
-    private static final String PKEY_VALUE_COUNT = "%s" + PKEY_LOCK_ENTRANCE_COUNT_SPLITERATOR + "[%d]";
+    private static final String PKEY_LOCK_ENTRANCE_COUNT_SPLITTER = "-";
+    private static final String PKEY_VALUE_COUNT = "%s" + PKEY_LOCK_ENTRANCE_COUNT_SPLITTER + "[%d]";
     private static final Pattern pattern = Pattern.compile("\\[(\\d+)\\]");
 
     public static String autoOverlayValue(String value) {
         validateParam(value);
+        if (value.equals(LOCK_UNLOCK)) {
+            return null;
+        }
         if (!value.contains("[")) {
             return String.format(PKEY_VALUE_COUNT, value, 1);
         }
@@ -54,6 +57,6 @@ class Constants {
         Matcher matcher = pattern.matcher(value);
         String s = matcher.find() ? matcher.group(1) : "";
         int count = Integer.parseInt(s) - 1;
-        return value.replaceFirst(PKEY_LOCK_ENTRANCE_COUNT_SPLITERATOR+"\\[\\d+\\]", count == 0 ? "" : PKEY_LOCK_ENTRANCE_COUNT_SPLITERATOR+"[" + (count) + "]");
+        return value.replaceFirst(PKEY_LOCK_ENTRANCE_COUNT_SPLITTER+"\\[\\d+\\]", count == 0 ? "" : PKEY_LOCK_ENTRANCE_COUNT_SPLITTER+"[" + (count) + "]");
     }
 }

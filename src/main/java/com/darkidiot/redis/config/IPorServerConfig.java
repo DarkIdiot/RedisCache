@@ -1,12 +1,13 @@
 package com.darkidiot.redis.config;
 
+import com.google.common.base.Throwables;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 
-import com.google.common.base.Throwables;
-
-import lombok.extern.slf4j.Slf4j;
+import static com.darkidiot.redis.config.RedisPropertyConstants.PKEY_TIMEOUT_IN_MILLIS;
 
 @Slf4j
 public class IPorServerConfig {
@@ -45,22 +46,18 @@ public class IPorServerConfig {
                 sb.append(str);
             }
         }
-        String macStr = sb.toString().toUpperCase();
-        log.debug("the mac address is : {}",macStr);
-        return macStr;
+        return sb.toString().toUpperCase();
     }
 
     //获取进程号
     private static String getPid() {
         String name = ManagementFactory.getRuntimeMXBean().getName();
-        String pid = name.split("@")[0];
-        log.debug("the pid is : {}", pid);
-        return pid;
+        return name.split("@")[0];
     }
 
     //获取线程号
     private static String getTid() {
-        return Thread.currentThread().getId() + "";
+        return Thread.currentThread().getName();
     }
 
     private static String getServerName(String service) {
@@ -74,7 +71,8 @@ public class IPorServerConfig {
     }
 
     public static String getThreadId() {
-        return getMac() + ":" + getPid() + ":" + getTid();
+        String template  = "%s:%s:%s";
+        return String.format(template, getMac(), getPid(), getTid());
     }
 
     public static void main(String[] args) {

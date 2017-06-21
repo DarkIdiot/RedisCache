@@ -1,5 +1,6 @@
 package com.darkidiot.base;
 
+import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.RedisLock;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,27 @@ public class LockTest {
     @AfterClass
     public static void tearDownAfterClass() throws Exception {
     }
+
+    @Test
+    public void testCreateKey() {
+        int n = testCount;
+        final CountDownLatch countDownLatch = new CountDownLatch(n);
+        for (int i = 0; i < n; i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    log.info(IPorServerConfig.getThreadId());
+                    countDownLatch.countDown();
+                }
+            }).start();
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Test
     public void testSimpleLock() {

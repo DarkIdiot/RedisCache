@@ -1,5 +1,6 @@
 package com.darkidiot.redis.lock.imp;
 
+import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
@@ -48,7 +49,7 @@ public class SimpleRedisLock implements Lock {
             throw new RedisException("acquireTimeout can not be negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(name);
-        final String value = UUIDUtil.generateShortUUID();
+        final String value = IPorServerConfig.getThreadId();
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
 

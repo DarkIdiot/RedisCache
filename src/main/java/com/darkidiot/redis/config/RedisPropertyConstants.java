@@ -67,7 +67,7 @@ public interface RedisPropertyConstants {
     int DEFAULT_DB_INDEX = 0;
 
     boolean DEFAULT_IS_CLUSTER = false;
-    boolean DEFAULT_R$W_SEPARATED =true;
+    boolean DEFAULT_R$W_SEPARATED = true;
     int DEFAULT_TIMEOUT = 10000;
     int DEFAULT_MAX_TOTAL = 8;
     int DEFAULT_MAX_IDLE = 8;

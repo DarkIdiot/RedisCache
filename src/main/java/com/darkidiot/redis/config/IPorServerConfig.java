@@ -56,8 +56,8 @@ public class IPorServerConfig {
     }
 
     //获取线程号
-    private static String getTid() {
-        return Thread.currentThread().getName();
+    private static long getTid() {
+        return Thread.currentThread().getId();
     }
 
     private static String getServerName(String service) {
@@ -71,7 +71,7 @@ public class IPorServerConfig {
     }
 
     public static String getThreadId() {
-        String template  = "%s:%s:%s";
+        String template  = "%s:%s:%d";
         return String.format(template, getMac(), getPid(), getTid());
     }
 

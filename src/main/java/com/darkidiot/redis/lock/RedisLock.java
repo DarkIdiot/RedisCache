@@ -32,7 +32,7 @@ public class RedisLock {
     private static final String SIMPLE_LOCK_PREFIX = "Simple Lock:";
     private static final String STRICT_LOCK_PREFIX = "Strict Lock:";
 
-    private static final Map<String, IJedis> IjedisMap = new ConcurrentHashMap<>();
+    private static final Map<String, IJedis> iJedisMap = new ConcurrentHashMap<>();
 
     public static Lock useRigorousRedisLock(final String lockname) throws RedisException {
         return useRigorousRedisLock(lockname, DEFAULT_SERVICE_KEY);
@@ -79,10 +79,10 @@ public class RedisLock {
 
     private static Lock invoke(Callback callback, String prefix, String lockname, String service) throws RedisException {
         String key = createKey(lockname, prefix);
-        IJedis jedis = IjedisMap.get(key);
+        IJedis jedis = iJedisMap.get(key);
         if (jedis == null) {
             jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
-            IjedisMap.put(key, jedis);
+            iJedisMap.put(key, jedis);
         }
         return callback.call(jedis);
     }

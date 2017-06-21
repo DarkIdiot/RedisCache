@@ -1,11 +1,11 @@
 package com.darkidiot.redis.lock.imp;
 
+import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
-import com.darkidiot.redis.util.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
@@ -48,7 +48,7 @@ public class RigorousRedisLock implements Lock {
         if (acquireTimeout < 0 || lockTimeout < -1) {
             throw new RedisException("acquireTimeout can not be negative Or LockTimeout can not be less than -1.");
         }
-        final String value = UUIDUtil.generateShortUUID();
+        final String value = IPorServerConfig.getThreadId();
         final String lockKey = Constants.createKey(this.name);
         final int lockExpire = (int) (lockTimeout);
         final long end = System.currentTimeMillis() + acquireTimeout;
@@ -56,20 +56,29 @@ public class RigorousRedisLock implements Lock {
             @Override
             public String call(Jedis jedis) {
                 int i = 1;
+                boolean flag = false;
+                boolean innerJudge = true;
+                String lockValue = value;
                 while (true) {
                     jedis.watch(lockKey);
                     // 开启watch之后，如果key的值被修改，则事务失败，exec方法返回null
                     String retStr = jedis.get(lockKey);
                     // 多个进程同时获取到未上锁状态时,进入事务上锁,第一个事务执行成功之后所有操作都会被取消并进入等待.
-                    if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK)) {
+                    if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK) || flag) {
                         Transaction t = jedis.multi();
-                        t.setex(lockKey, lockExpire, value);
+                        t.setex(lockKey, lockExpire, lockValue);
                         if (t.exec() != null) {
-                            identifier = value;
+                            identifier = lockValue;
                             return identifier;
                         }
                     }
                     jedis.unwatch();
+                    if (innerJudge && retStr != null && retStr.contains(value)) {
+                        lockValue = Constants.autoOverlayValue(retStr);
+                        flag = true;
+                    } else if (retStr != null){
+                        innerJudge = false;
+                    }
                     try {
                         long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(++i > 15 ? 15 : i));
                         if (System.currentTimeMillis() > end) {
@@ -99,7 +108,7 @@ public class RigorousRedisLock implements Lock {
             @Override
             public Boolean call(Jedis jedis) {
                 long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
+                if (identifier.equals(jedis.getSet(lockKey, Constants.autoDepriveValue(identifier)))) {
                     if (System.currentTimeMillis() > end) {
                         log.warn("Release RigorousRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }

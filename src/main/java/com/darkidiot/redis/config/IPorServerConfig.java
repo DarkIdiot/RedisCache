@@ -7,10 +7,11 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 
-import static com.darkidiot.redis.config.RedisPropertyConstants.PKEY_TIMEOUT_IN_MILLIS;
-
 @Slf4j
 public class IPorServerConfig {
+
+    private static final String MAC = getMac();
+    private static final String PID = getPid();
 
     private static String getIP() {
         String ip = "";
@@ -71,14 +72,16 @@ public class IPorServerConfig {
     }
 
     public static String getThreadId() {
-        String template  = "%s:%s:%d";
-        return String.format(template, getMac(), getPid(), getTid());
+        String template = "%s:%s:%s";
+        return String.format(template, MAC, PID, Thread.currentThread().getName());
+//        String template = "%s:%s:%d";
+//        return String.format(template, MAC, PID, getTid());
     }
 
     public static void main(String[] args) {
-        log.info("My computer's ip is:{}" , getIP());
-        log.warn("My computer's pid is:{}" , getPid());
-        log.error("My computer's tid is:{}" , getTid());
-        log.info("My computer's mac is:{}" , getMac());
+        log.info("My computer's ip is:{}", getIP());
+        log.warn("My computer's pid is:{}", getPid());
+        log.error("My computer's tid is:{}", getTid());
+        log.info("My computer's mac is:{}", getMac());
     }
 }

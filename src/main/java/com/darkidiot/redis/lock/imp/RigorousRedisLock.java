@@ -46,7 +46,7 @@ public class RigorousRedisLock implements Lock {
     @Override
     public void lock(final long acquireTimeout, final long lockTimeout) throws RedisException {
         if (acquireTimeout < 0 || lockTimeout < -1) {
-            throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
+            throw new RedisException("acquireTimeout can not be negative Or LockTimeout can not be less than -1.");
         }
         final String value = UUIDUtil.generateShortUUID();
         final String lockKey = Constants.createKey(this.name);

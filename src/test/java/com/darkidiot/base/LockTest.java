@@ -1,6 +1,9 @@
 package com.darkidiot.base;
 
+import com.darkidiot.redis.Redis;
 import com.darkidiot.redis.config.IPorServerConfig;
+import com.darkidiot.redis.config.JedisPoolFactory;
+import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.lock.RedisLock;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +45,12 @@ public class LockTest {
         }
     }
 
+    @Test
+    public void deleteSimpleLock(){
+        String service = "redis";
+        Jedis jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
+        jedis.del("Lock:Simple RedisLock");
+    }
 
     @Test
     public void testSimpleLock() {

@@ -60,7 +60,6 @@ public class SimpleRedisLock implements Lock {
             @Override
             public String call(Jedis jedis) {
                 int i = 1;
-                log.debug("entrance lock");
                 while (true) {
                     // 将rediskey的最大生存时刻存到redis里，过了这个时刻该锁会被自动释放
                     if (jedis.setnx(lockKey, value) == 1) {
@@ -96,7 +95,6 @@ public class SimpleRedisLock implements Lock {
                         Thread.currentThread().interrupt();
                     }
                 }
-                log.debug("lock");
                 return identifier;
             }
         }, WRITE);
@@ -109,12 +107,10 @@ public class SimpleRedisLock implements Lock {
         }
         final String lockKey = Constants.createKey(this.name);
         final long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-        log.debug("unlock");
         return jedis.callOriginalJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {
                 String o1 = jedis.get(lockKey);
-                log.debug("identifier:{},value:{}",identifier, o1);
                 if (identifier.equals(o1)) {
                     jedis.del(lockKey);
                     if (System.currentTimeMillis() > end) {

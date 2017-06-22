@@ -121,8 +121,6 @@ public class LockTest {
                 public void run() {
                     try {
                         lock.lock();
-//                        lock1.lock();
-//                        log.info(Thread.currentThread() + ":" + lock1.unlock());
                         boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {

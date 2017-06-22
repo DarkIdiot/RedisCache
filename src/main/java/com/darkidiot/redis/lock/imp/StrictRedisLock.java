@@ -1,11 +1,11 @@
 package com.darkidiot.redis.lock.imp;
 
+import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
-import com.darkidiot.redis.util.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
@@ -19,8 +19,9 @@ import static com.darkidiot.redis.util.CommonUtil.Callback;
 /**
  * 严格的分布式锁的实现(事务锁定)<br>
  * <br>
- * 可能会出现2种极端情况:
+ * <b>Notice(可能会出现2种极端情况:):<b/>
  * <ul>
+ * <li>可重入锁(重入锁必须先于外部锁释放)</li>
  * <li>锁已过过期时效但是并未失效.</li>
  * <li>成功解锁并返回false,加锁期间其他进程进入并修改了锁信息并再次延长锁过期时间,但并未获得锁.</li>
  * </ul>
@@ -52,26 +53,35 @@ public class StrictRedisLock implements Lock {
             throw new RedisException("acquireTimeout can not be  negative Or LockTimeout can not be less than -1.");
         }
         final String lockKey = Constants.createKey(this.name);
-        final String value = UUIDUtil.generateShortUUID();
+        final String value = IPorServerConfig.getThreadId();
+        final int lockExpire = (int) (lockTimeout);
+        final long end = System.currentTimeMillis() + acquireTimeout;
         jedis.callOriginalJedis(new Callback<String>() {
             @Override
             public String call(Jedis jedis) {
-                int lockExpire = (int) (lockTimeout);
-
-                long end = System.currentTimeMillis() + acquireTimeout;
                 int i = 1;
+                boolean flag = false;
+                boolean innerJudge = true;
+                String lockValue = value;
                 while (true) {
                     String retStr = jedis.get(lockKey);
                     if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK)) {
                         Transaction t = jedis.multi();
-                        t.getSet(lockKey, value);
+                        t.getSet(lockKey, lockValue);
                         t.expire(lockKey, lockExpire);
                         String ret = (String) t.exec().get(0);
                         if (ret == null || ret.equals(Constants.LOCK_UNLOCK)) {
-                            identifier = value;
-                            return value;
+                            identifier = lockValue;
+                            return identifier;
                         }
                     }
+
+                    if (innerJudge && retStr != null && retStr.contains(value)) {
+                        flag = true;
+                        lockValue = Constants.autoOverlayValue(retStr);
+                        innerJudge = false;
+                    }
+
                     try {
                         long sleepMillis = Constants.defaultWaitIntervalInMSUnit * new Random().nextInt(FibonacciUtil.circulationFibonacciNormal(++i > 15 ? 15 : i));
                         if (System.currentTimeMillis() > end) {
@@ -101,7 +111,7 @@ public class StrictRedisLock implements Lock {
             @Override
             public Boolean call(Jedis jedis) {
                 long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
+                if (identifier.equals(jedis.getSet(lockKey, Constants.autoDepriveValue(identifier)))) {
                     if (System.currentTimeMillis() > end) {
                         log.warn("Release StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }

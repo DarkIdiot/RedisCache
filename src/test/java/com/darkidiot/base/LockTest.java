@@ -15,7 +15,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class LockTest {
-    private int testCount = 30;
+    private int testCount = 2000;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -111,6 +111,7 @@ public class LockTest {
     @Test
     public void testStrictLock() {
         final Lock lock = RedisLock.useStrictRedisLock("Strict RedisLock");
+        final Lock lock1 = RedisLock.useStrictRedisLock("Strict RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();
@@ -120,6 +121,8 @@ public class LockTest {
                 public void run() {
                     try {
                         lock.lock();
+//                        lock1.lock();
+//                        log.info(Thread.currentThread() + ":" + lock1.unlock());
                         boolean unlockFlag = lock.unlock();
                         log.info(Thread.currentThread() + ":" + unlockFlag);
                     } finally {
@@ -146,7 +149,6 @@ public class LockTest {
     @Test
     public void testRigorousLock() {
         final Lock lock = RedisLock.useRigorousRedisLock("Rigorous RedisLock");
-        final Lock lock1 = RedisLock.useRigorousRedisLock("Rigorous RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();

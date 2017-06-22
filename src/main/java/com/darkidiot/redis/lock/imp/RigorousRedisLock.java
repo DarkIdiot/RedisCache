@@ -4,6 +4,7 @@ import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
+import com.darkidiot.redis.lock.RedisLock;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -93,6 +94,7 @@ public class RigorousRedisLock implements Lock {
                 }
             }
         }, WRITE);
+        RedisLock.overlayLockCount(jedis,lockKey);
     }
 
     @Override
@@ -106,6 +108,7 @@ public class RigorousRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
+        RedisLock.DepriveLockCount(jedis,lockKey);
         return jedis.callOriginalJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {

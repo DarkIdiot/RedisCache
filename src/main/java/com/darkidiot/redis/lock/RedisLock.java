@@ -1,17 +1,24 @@
 package com.darkidiot.redis.lock;
 
 import com.darkidiot.redis.config.JedisPoolFactory;
+import com.darkidiot.redis.config.RedisInitParam;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
 import com.darkidiot.redis.lock.imp.StrictRedisLock;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_SERVICE_KEY;
 
@@ -31,7 +38,32 @@ public class RedisLock {
     private static final String SIMPLE_LOCK_PREFIX = "Simple Lock:";
     private static final String STRICT_LOCK_PREFIX = "Strict Lock:";
 
-    private static final Map<String, IJedis> iJedisMap = new ConcurrentHashMap<>();
+    private static final Map<String, IJedis> iJedisMap = Maps.newConcurrentMap();
+
+    private static final Map<String, Multiset<String>> needReleaseKeyMap = Maps.newConcurrentMap();
+
+    public static void overlayLockCount(IJedis jedis, String LockKey) {
+        Multiset<String> multiset = needReleaseKeyMap.get(jedis.baseConfig().getServerName());
+        multiset.add(LockKey);
+    }
+
+    public static void DepriveLockCount(IJedis jedis, String LockKey) {
+        Multiset<String> multiset = needReleaseKeyMap.get(jedis.baseConfig().getServerName());
+        multiset.remove(LockKey);
+    }
+
+    public static void releaseLockWhenShutdown() {
+        for (Map.Entry<String, IJedis> entry : iJedisMap.entrySet()) {
+            String key = entry.getKey();
+            IJedis jedis = entry.getValue();
+            Multiset<String> LockKeySet = needReleaseKeyMap.get(key);
+            List<String> needReleaseKey = Lists.newArrayList();
+            for (Multiset.Entry<String> lockKey : LockKeySet.entrySet()) {
+
+            }
+        }
+    }
+
 
     public static Lock useRigorousRedisLock(final String lockname) throws RedisException {
         return useRigorousRedisLock(lockname, DEFAULT_SERVICE_KEY);
@@ -77,16 +109,17 @@ public class RedisLock {
     }
 
     private static Lock invoke(Callback callback, String prefix, String lockname, String service) throws RedisException {
-        String key = createKey(lockname, prefix);
-        IJedis jedis = iJedisMap.get(key);
+        IJedis jedis = iJedisMap.get(service);
         if (jedis == null) {
-            jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), JedisPoolFactory.getInitParam(service));
-            iJedisMap.put(key, jedis);
+            RedisInitParam initParam = JedisPoolFactory.getInitParam(service);
+            if (!initParam.getR$WSeparated()) {
+                throw new IllegalStateException("Can not create RedisLock cause by don't separate write and read, should be configuration [{}.read&write.separated=true] to use RedisLock.");
+            }
+            jedis = new Jedis(JedisPoolFactory.getWritePool(service), JedisPoolFactory.getReadPool(service), initParam);
+            iJedisMap.put(service, jedis);
+            needReleaseKeyMap.put(service, HashMultiset.<String>create());
         }
         return callback.call(jedis);
     }
 
-    private static String createKey(String lockname, String prefix) {
-        return prefix + lockname;
-    }
 }

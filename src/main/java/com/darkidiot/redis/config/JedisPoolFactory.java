@@ -43,6 +43,8 @@ public class JedisPoolFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
+
+
                 for (Entry<String, Pool> entry : poolMap.entrySet()) {
                     Pool pool = entry.getValue();
                     log.info("The JedisPool: {} will be destroyed.", pool);
@@ -133,6 +135,9 @@ public class JedisPoolFactory {
             if (!StringUtil.isEmpty(read$write)) {
                 log.info("RedisCache set configuration[{}] -> {}", format, read$write);
                 redisInitParam.setR$WSeparated(Boolean.valueOf(read$write));
+            } else {
+                log.info("RedisCache set configuration[{}] -> {}", format, DEFAULT_R$W_SEPARATED);
+                redisInitParam.setR$WSeparated(DEFAULT_R$W_SEPARATED);
             }
 
             format = String.format(PKEY_OPEN_LOCAL_CACHE, serviceName);

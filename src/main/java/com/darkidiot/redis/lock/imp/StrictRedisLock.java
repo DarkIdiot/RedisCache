@@ -4,6 +4,7 @@ import com.darkidiot.redis.config.IPorServerConfig;
 import com.darkidiot.redis.exception.RedisException;
 import com.darkidiot.redis.jedis.IJedis;
 import com.darkidiot.redis.lock.Lock;
+import com.darkidiot.redis.lock.RedisLock;
 import com.darkidiot.redis.util.FibonacciUtil;
 import com.darkidiot.redis.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import static com.darkidiot.redis.util.CommonUtil.Callback;
  * <br>
  * <b>Notice(可能会出现2种极端情况:):<b/>
  * <ul>
- * <li>可重入锁(重入锁必须先于外部锁释放)</li>
+ * <li>不可重入锁</li>
  * <li>锁已过过期时效但是并未失效.</li>
  * <li>成功解锁并返回false,加锁期间其他进程进入并修改了锁信息并再次延长锁过期时间,但并未获得锁.</li>
  * </ul>
@@ -60,26 +61,17 @@ public class StrictRedisLock implements Lock {
             @Override
             public String call(Jedis jedis) {
                 int i = 1;
-                boolean flag = false;
-                boolean innerJudge = true;
-                String lockValue = value;
                 while (true) {
                     String retStr = jedis.get(lockKey);
                     if (retStr == null || retStr.equals(Constants.LOCK_UNLOCK)) {
                         Transaction t = jedis.multi();
-                        t.getSet(lockKey, lockValue);
+                        t.getSet(lockKey, value);
                         t.expire(lockKey, lockExpire);
                         String ret = (String) t.exec().get(0);
                         if (ret == null || ret.equals(Constants.LOCK_UNLOCK)) {
-                            identifier = lockValue;
+                            identifier = value;
                             return identifier;
                         }
-                    }
-
-                    if (innerJudge && retStr != null && retStr.contains(value)) {
-                        flag = true;
-                        lockValue = Constants.autoOverlayValue(retStr);
-                        innerJudge = false;
                     }
 
                     try {
@@ -94,6 +86,7 @@ public class StrictRedisLock implements Lock {
                 }
             }
         }, WRITE);
+        RedisLock.overlayLockCount(jedis,lockKey);
     }
 
     @Override
@@ -107,11 +100,12 @@ public class StrictRedisLock implements Lock {
             throw new RedisException("identifier can not be empty.");
         }
         final String lockKey = Constants.createKey(this.name);
+        RedisLock.DepriveLockCount(jedis,lockKey);
         return jedis.callOriginalJedis(new Callback<Boolean>() {
             @Override
             public Boolean call(Jedis jedis) {
                 long end = System.currentTimeMillis() + Constants.defaultReleaseLockTimeout;
-                if (identifier.equals(jedis.getSet(lockKey, Constants.autoDepriveValue(identifier)))) {
+                if (identifier.equals(jedis.getSet(lockKey, Constants.LOCK_UNLOCK))) {
                     if (System.currentTimeMillis() > end) {
                         log.warn("Release StrictRedisLock time out. spend[ {}ms ]", System.currentTimeMillis() - end);
                     }

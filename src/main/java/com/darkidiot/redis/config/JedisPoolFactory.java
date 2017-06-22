@@ -145,6 +145,9 @@ public class JedisPoolFactory {
             if (!StringUtil.isEmpty(openLocalCache)) {
                 log.info("RedisCache set configuration[{}] -> {}", format, openLocalCache);
                 redisInitParam.setOpenLocalCache(Boolean.valueOf(openLocalCache));
+            } else {
+                log.info("RedisCache set configuration[{}] -> {}", format, DEFAULT_OPEN_LOCAL_CACHE);
+                redisInitParam.setOpenLocalCache(DEFAULT_OPEN_LOCAL_CACHE);
             }
 
             format = String.format(PKEY_DB_INDEX, serviceName);

@@ -36,7 +36,7 @@ public interface RedisPropertyConstants {
     String PKEY_DB_INDEX = "%s.db.index";
 
     /** 是否是集群配置 */
-    String PKEY_ISCLUSTER = "%s.redis.cluster";
+    String PKEY_ISCLUSTER = "%s.is.cluster";
 
     /** 密码 */
     String PKEY_PASSWORD = "%s.password";
@@ -66,6 +66,7 @@ public interface RedisPropertyConstants {
 
     int DEFAULT_DB_INDEX = 0;
 
+    boolean DEFAULT_OPEN_LOCAL_CACHE = false;
     boolean DEFAULT_IS_CLUSTER = false;
     boolean DEFAULT_R$W_SEPARATED = true;
     int DEFAULT_TIMEOUT = 10000;

@@ -4,8 +4,11 @@ import com.darkidiot.redis.exception.RedisException;
 
 /**
  * Redis分布式锁<非阻塞式></><br>
+ * <b>Notice(暂不实现):<b/><br/>
+ * <ul>
  * <li>依赖jedisPool,使得每一个锁的操作都新从jedisPool中去获取jedis,消除了从加锁到释放锁之间长期占用jedis连接</li>
  * <li><strong>Notice:</strong> 对于同一个锁的实例而言,进程并发量支持数最大值为6,线程数支持MAX级别, 处理时间也会相应的延长 .</li>
+ * </ul>
  * @author darkidiot
  */
 public interface NonBlockingLock {

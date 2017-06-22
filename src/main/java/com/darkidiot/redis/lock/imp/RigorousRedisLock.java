@@ -21,7 +21,9 @@ import static com.darkidiot.redis.util.CommonUtil.Callback;
 /**
  * <font color="red"><b>Commend:</b></font>
  * 严格的分布式锁的实现(超级超级严格)
- *
+ * <b>Notice:<b/>
+ * <ul>
+ * <li>可重入锁(重入锁必须先于外部锁释放)</li>
  * @author darkidiot
  */
 @Slf4j

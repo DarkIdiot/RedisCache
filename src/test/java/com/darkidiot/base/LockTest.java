@@ -111,7 +111,6 @@ public class LockTest {
     @Test
     public void testStrictLock() {
         final Lock lock = RedisLock.useStrictRedisLock("Strict RedisLock");
-        final Lock lock1 = RedisLock.useStrictRedisLock("Strict RedisLock");
         int n = testCount;
         final CountDownLatch countDownLatch = new CountDownLatch(n);
         long start = System.currentTimeMillis();

@@ -73,7 +73,7 @@ public class IPorServerConfig {
 
     public static String getThreadId() {
         String template = "%s:%s:%s";
-        return String.format(template, MAC, PID, Thread.currentThread().getName());
+        return String.format(template, MAC, PID, getTid());
 //        String template = "%s:%s:%d";
 //        return String.format(template, MAC, PID, getTid());
     }

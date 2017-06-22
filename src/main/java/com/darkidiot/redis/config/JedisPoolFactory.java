@@ -2,6 +2,7 @@ package com.darkidiot.redis.config;
 
 import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.exception.RedisException;
+import com.darkidiot.redis.lock.RedisLock;
 import com.darkidiot.redis.util.StringUtil;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
@@ -43,8 +44,7 @@ public class JedisPoolFactory {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 log.info("The JVM Hook is execute.");
-
-
+                RedisLock.releaseLockWhenShutdown();
                 for (Entry<String, Pool> entry : poolMap.entrySet()) {
                     Pool pool = entry.getValue();
                     log.info("The JedisPool: {} will be destroyed.", pool);

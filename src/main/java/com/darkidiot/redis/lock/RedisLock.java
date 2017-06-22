@@ -1,5 +1,6 @@
 package com.darkidiot.redis.lock;
 
+import com.darkidiot.redis.common.JedisType;
 import com.darkidiot.redis.config.JedisPoolFactory;
 import com.darkidiot.redis.config.RedisInitParam;
 import com.darkidiot.redis.exception.RedisException;
@@ -8,17 +9,18 @@ import com.darkidiot.redis.jedis.imp.Jedis;
 import com.darkidiot.redis.lock.imp.RigorousRedisLock;
 import com.darkidiot.redis.lock.imp.SimpleRedisLock;
 import com.darkidiot.redis.lock.imp.StrictRedisLock;
+import com.darkidiot.redis.util.CommonUtil;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_SERVICE_KEY;
 
@@ -32,6 +34,7 @@ import static com.darkidiot.redis.config.RedisPropertyConstants.DEFAULT_SERVICE_
  * @author darkidiot
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class RedisLock {
 
     private static final String RIGOROUS_LOCK_PREFIX = "Rigorous Lock:";
@@ -57,9 +60,21 @@ public class RedisLock {
             String key = entry.getKey();
             IJedis jedis = entry.getValue();
             Multiset<String> LockKeySet = needReleaseKeyMap.get(key);
-            List<String> needReleaseKey = Lists.newArrayList();
-            for (Multiset.Entry<String> lockKey : LockKeySet.entrySet()) {
+            final List<String> needReleaseKey = Lists.newArrayList();
+            for (Multiset.Entry<String> lockEntry : LockKeySet.entrySet()) {
+                if (lockEntry.getCount() != 0) {
+                    needReleaseKey.add(lockEntry.getElement());
+                }
+            }
 
+            if (needReleaseKey.size() != 0) {
+                jedis.callOriginalJedis(new CommonUtil.Callback<Long>() {
+                    @Override
+                    public Long call(redis.clients.jedis.Jedis jedis) {
+                        return jedis.del(needReleaseKey.toArray(new String[0]));
+                    }
+                }, JedisType.READ);
+                log.debug("release lock [{}] before shutdown.", Arrays.toString(needReleaseKey.toArray()));
             }
         }
     }
@@ -121,5 +136,4 @@ public class RedisLock {
         }
         return callback.call(jedis);
     }
-
 }

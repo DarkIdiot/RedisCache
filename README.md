@@ -77,15 +77,15 @@ Overview
 ### RedisQueue
 #### Normal Style
 ```Java
-	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    Queue<Task> queue = RedisQueue.useSimpleFifoQueue("simpleQueue","redisSourceName");
+    queue.enqueue(task1,task2,task3);
+    Task task = queue.dequeue();
 ```
 #### Fluent Style
 ```Java
-	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    Queue<Task> queue = RedisQueue.create().setService("redisSourceName").setQueueName("simpleQueue").useSimpleFifoQueue();
+    queue.enqueue(task1,task2,task3);
+    Task task = queue.dequeue();
 ```
 
 # Dependencies:

@@ -119,8 +119,7 @@ public class RedisQueue {
      * **************************** fluent code ******************************
      */
 
-    @Data
-    private static class Configuration {
+    public static class Configuration {
         private String service = DEFAULT_SERVICE_KEY;
         private String queueName;
 

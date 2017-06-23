@@ -2,14 +2,8 @@ package com.darkidiot.base;
 
 import com.darkidiot.redis.IRedisMap;
 import com.darkidiot.redis.Redis;
-import com.darkidiot.redis.lock.Lock;
-import com.darkidiot.redis.lock.RedisLock;
-import com.darkidiot.redis.queue.Queue;
-import com.darkidiot.redis.queue.RedisQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
-
-import java.io.Serializable;
 
 @Slf4j
 public class CacheTest {

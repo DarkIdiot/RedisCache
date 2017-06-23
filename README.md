@@ -64,15 +64,15 @@ Overview
 ```Java
     Lock lock = RedisLock.useSimpleRedisLock("simpleLock", "redisSourceName");
     lock.lock();
-    lock.unlock();
     lock.isLocking();
+    lock.unlock();
 ```
 #### Fluent Style
 ```Java
     Lock lock = RedisLock.create().setService("redisSourceName").setLockName("simpleLock").useSimpleRedisLock();
     lock.lock();
-    lock.unlock();
     lock.isLocking();
+    lock.unlock();
 ```
 ### RedisQueue
 #### Normal Style

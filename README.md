@@ -48,9 +48,8 @@ Overview
 
 ### RedisCache
 `Normal Style`
-
 ```Java
-	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
+	IRedisMap<String, String> cache = Redis.use("redisSourceName");
 	cache.put("redisKey","redisValue");
 	cache.get("redisKey");
 ```
@@ -63,15 +62,17 @@ Overview
 ### RedisLock
 #### Normal Style
 ```Java
-	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    Lock lock = RedisLock.useSimpleRedisLock("simpleLock", "redisSourceName");
+    lock.lock();
+    lock.unlock();
+    lock.isLocking();
 ```
 #### Fluent Style
 ```Java
-	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    Lock lock = RedisLock.create().setService("redisSourceName").setLockName("simpleLock").useSimpleRedisLock();
+    lock.lock();
+    lock.unlock();
+    lock.isLocking();
 ```
 ### RedisQueue
 #### Normal Style

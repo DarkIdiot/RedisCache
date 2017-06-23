@@ -25,14 +25,14 @@ Overview
 	cache.get("redisKey");
 ```
 ### RedisLock
-#### Normal Style
+`Normal Style`
 ```Java
     Lock lock = RedisLock.useSimpleRedisLock("simpleLock", "redisSourceName");
     lock.lock();
     lock.isLocking();
     lock.unlock();
 ```
-#### Fluent Style
+`Fluent Style`
 ```Java
     Lock lock = RedisLock.create().setService("redisSourceName").setLockName("simpleLock").useSimpleRedisLock();
     lock.lock();
@@ -40,13 +40,13 @@ Overview
     lock.unlock();
 ```
 ### RedisQueue
-#### Normal Style
+`Normal Style`
 ```Java
     Queue<Task> queue = RedisQueue.useSimpleFifoQueue("simpleQueue","redisSourceName");
     queue.enqueue(task1,task2,task3);
     Task task = queue.dequeue();
 ```
-#### Fluent Style
+`Fluent Style`
 ```Java
     Queue<Task> queue = RedisQueue.create().setService("redisSourceName").setQueueName("simpleQueue").useSimpleFifoQueue();
     queue.enqueue(task1,task2,task3);

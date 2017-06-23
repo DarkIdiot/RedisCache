@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -136,4 +137,40 @@ public class RedisLock {
         }
         return callback.call(jedis);
     }
+
+    /** *************************** fluent code ****************************** */
+
+    @Data
+    private static class Configuration {
+        private String service = DEFAULT_SERVICE_KEY;
+        private String lockName;
+
+        public Configuration setService(String service) {
+            this.service = service;
+            return this;
+        }
+
+        public Configuration setLockName(String LockName) {
+            this.lockName = LockName;
+            return this;
+        }
+
+        public Lock useSimpleRedisLock() {
+            return RedisLock.useSimpleRedisLock(lockName, service);
+        }
+
+        public Lock useStrictRedisLock() {
+            return RedisLock.useStrictRedisLock(lockName, service);
+        }
+
+        public Lock useRigorousRedisLock() {
+            return RedisLock.useRigorousRedisLock(lockName, service);
+        }
+    }
+
+    public static Configuration create() {
+        return new Configuration();
+    }
+
+
 }

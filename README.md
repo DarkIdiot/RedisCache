@@ -5,8 +5,8 @@ Tips：
      required: JDK1.7+
 Overview
 -
-#### RedisCache是基于Jedis的SDK。
->> ①实现了防穿透缓存，分布式锁，分布式队列，本地缓存同步更新<br>
+#### `RedisCache`是基于`Jedis`的SDK。
+>> ①实现了防穿透`缓存`，`分布式锁`，`分布式队列`，本地缓存同步更新<br>
 >> ②个性化的redis源配置支持<br>
 
 # Configuration
@@ -47,7 +47,9 @@ Overview
 # Usage:
 
 ### RedisCache
->> <br>
+```
+Redis.<String, String>use().get("123")
+```
 
 ### RedisLock
 >> <br>

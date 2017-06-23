@@ -47,19 +47,18 @@ Overview
 # Usage:
 
 ### RedisCache
+#### Normal Style
 ```Java
-		IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
-        cache.put("redisKey","redisValue");
-        cache.get("redisKey");
+	IRedisMap<Serializable, Serializable> cache = 		Redis.use("redisSourceName");
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
 ```
-```C++
-#include <iostream>
-int main ()
-{
-  std::cout << "Hello Word!" << std::endl;
-}
+#### Fluent Style
+```Java
+	IRedisMap<Serializable, Serializable> cache = 		Redis.use("redisSourceName");
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
 ```
-
 ### RedisLock
 >> <br>
 

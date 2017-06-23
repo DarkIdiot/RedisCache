@@ -49,21 +49,42 @@ Overview
 ### RedisCache
 #### Normal Style
 ```Java
-	IRedisMap<Serializable, Serializable> cache = 		Redis.use("redisSourceName");
+	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
 	cache.put("redisKey","redisValue");
 	cache.get("redisKey");
 ```
 #### Fluent Style
 ```Java
-	IRedisMap<Serializable, Serializable> cache = 		Redis.use("redisSourceName");
+	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
 	cache.put("redisKey","redisValue");
 	cache.get("redisKey");
 ```
 ### RedisLock
->> <br>
-
+#### Normal Style
+```Java
+	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
+```
+#### Fluent Style
+```Java
+	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
+```
 ### RedisQueue
->> <br>
+#### Normal Style
+```Java
+	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
+```
+#### Fluent Style
+```Java
+	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
+	cache.put("redisKey","redisValue");
+	cache.get("redisKey");
+```
 
 # Dependencies:
     <dependencies>

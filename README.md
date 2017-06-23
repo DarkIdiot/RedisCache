@@ -1,16 +1,59 @@
-# Redis Cache
-### Tips：
+Redis Cache
+=
+Tips：
+-
      required: JDK1.7+
-# Overview
-##### RedisCache是基于Redis的客户端，实现了防穿透缓存，分布式锁，分布式队列，以及本地缓存等功能。
-# configuration:
-## connection
-### mode one
+Overview
+-
+#### RedisCache是基于Jedis的SDK。
+>> ①实现了防穿透缓存，分布式锁，分布式队列，本地缓存同步更新<br>
+>> ②个性化的redis源配置支持<br>
 
-## basic
-#### redis.[.read].pool.testOnReturn=false
-#### redis.[.write].pool.testOnReturn=false
+# Configuration
+## pattern I @for connection@
+>>> service.names=<b>redisSourceName</b>,<b>redisSourceName1</b>,...
+
+### Stand-Alone
+>>> <b>redisSourceName</b>.ip = <font color="grey ">127.0.0.1</font><br>
+>>> <b>redisSourceName</b>.port = <font color="grey ">6379</font><br>
+>>> <b>redisSourceName</b>.password=<font color="grey ">password</font><br>
+
+#### <font color="green">Simplified Way
+
+>>> <b>redisSourceName</b>.ip-port-password = <font color="grey ">127.0.0.1:6379?password</font></font>
+
+### Sentinel
+>>> <b>redisSourceName1</b>.is.cluster = <font color="grey ">true</font><br>
+>>> <b>redisSourceName1</b>.sentinel.master.name = <font color="grey ">masterName</font><br>
+>>> <b>redisSourceName1</b>.sentinel.hosts = <font color="grey ">127.0.0.1:6379;127.0.0.1:6389;127.0.0.1:6379;127.0.0.1:6399</font><br>
+>>> <b>redisSourceName1</b>.password = <font color="grey ">password</font><br>
+
+## pattern II @for basic@
+
+>>> <b>redisSourceName</b>.open.local.cache = <font color="grey ">true</font><br>
+>>> <b>redisSourceName</b>[.read].timeoutInMillis = <font color="grey ">10000</font><br>
+>>> <b>redisSourceName</b>[.write].timeoutInMillis = <font color="grey ">10000</font><br>
+>>> <b>redisSourceName</b>[.read].maxTotal = <font color="grey ">8</font><br>
+>>> <b>redisSourceName</b>[.write].maxTotal = <font color="grey ">8</font><br>
+>>> <b>redisSourceName</b>[.read].maxIdle = <font color="grey ">20</font><br>
+>>> <b>redisSourceName</b>[.write].maxIdle = <font color="grey ">20</font><br>
+>>> <b>redisSourceName</b>[.read].maxWait = <font color="grey ">2000</font><br>
+>>> <b>redisSourceName</b>[.write].maxWait = <font color="grey ">2000</font><br>
+>>> <b>redisSourceName</b>[.read].testOnBorrow = <font color="grey ">true</font><br>
+>>> <b>redisSourceName</b>[.write].testOnBorrow = <font color="grey ">true</font><br>
+>>> <b>redisSourceName</b>[.read].testOnReturn = <font color="grey ">false</font><br>
+>>> <b>redisSourceName</b>[.write].testOnReturn = <font color="grey ">false</font><br>
+
 # Usage:
+
+### RedisCache
+>> <br>
+
+### RedisLock
+>> <br>
+
+### RedisQueue
+>> <br>
 
 # Dependencies:
     <dependencies>

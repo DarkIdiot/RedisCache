@@ -6,8 +6,8 @@ Tips：
 Overview
 -
 #### `RedisCache`是基于`Jedis`的SDK。
->> ①实现了防穿透`缓存`，`分布式锁`，`分布式队列`，本地缓存同步更新<br>
->> ②个性化的redis源配置支持<br>
++ ①实现了防穿透`缓存`，`分布式锁`，`分布式队列`，本地缓存同步更新<br>
++ ②个性化的redis源配置支持<br>
 
 # Configuration
 ## pattern I @for connection@
@@ -47,8 +47,17 @@ Overview
 # Usage:
 
 ### RedisCache
+```Java
+		IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
+        cache.put("redisKey","redisValue");
+        cache.get("redisKey");
 ```
-Redis.<String, String>use().get("123")
+```C++
+#include <iostream>
+int main ()
+{
+  std::cout << "Hello Word!" << std::endl;
+}
 ```
 
 ### RedisLock

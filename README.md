@@ -47,13 +47,14 @@ Overview
 # Usage:
 
 ### RedisCache
-#### Normal Style
+`Normal Style`
+
 ```Java
 	IRedisMap<Serializable, Serializable> cache = Redis.use("redisSourceName");
 	cache.put("redisKey","redisValue");
 	cache.get("redisKey");
 ```
-#### Fluent Style
+`Fluent Style`
 ```Java
 	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
 	cache.put("redisKey","redisValue");

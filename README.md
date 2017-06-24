@@ -54,7 +54,7 @@ Overview
 ```
 
 # Configuration
-<font color="BlueViolet" size=1>In</font> `redis.properties`
+<pre>&#9;&#9;&#9;&#9;&#9;&#9;<font color="BlueViolet" size=1>In</font> `redis.properties`</pre>
 
 ## pattern I @for connection@
 >>> service.names=<b>redisSourceName</b>,<b>redisSourceName1</b>,...

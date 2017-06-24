@@ -2,7 +2,7 @@ Redis Cache
 =
 Tips：
 -
-     required: JDK1.7+
+     required: JDK1.5+
 Overview
 -
 #### `RedisCache`是基于`Jedis`的SDK。
@@ -53,7 +53,8 @@ Overview
     Task task = queue.dequeue();
 ```
 
-# Configuration
+# Configuration <font color="BlueViolet" size=1>for</font> `redis.properties`
+
 ## pattern I @for connection@
 >>> service.names=<b>redisSourceName</b>,<b>redisSourceName1</b>,...
 

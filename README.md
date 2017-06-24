@@ -53,7 +53,8 @@ Overview
     Task task = queue.dequeue();
 ```
 
-# Configuration <font color="BlueViolet" size="1" > In `redis.properties` </font>
+<h1><a class="anchor" id="configuration-in-redis-properties-" href="#configuration-in-redis-properties-"></a>Configuration <font color="BlueViolet" size="1" > In <code>redis.properties</code>
+</font></h1>
 
 ## pattern I @for connection@
 >>> service.names=<b>redisSourceName</b>,<b>redisSourceName1</b>,...

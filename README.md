@@ -33,7 +33,8 @@ Overview
         lock.isLocking();
     } finally {
         lock.unlock();
-    }```
+    }
+```
 `Fluent Style`
 ```Java
     Lock lock = RedisLock.create().setService("redisSourceName").setLockName("simpleLock").useSimpleRedisLock();

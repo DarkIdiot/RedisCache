@@ -28,16 +28,21 @@ Overview
 `Normal Style`
 ```Java
     Lock lock = RedisLock.useSimpleRedisLock("simpleLock", "redisSourceName");
-    lock.lock();
-    lock.isLocking();
-    lock.unlock();
-```
+    try {
+        lock.lock();
+        lock.isLocking();
+    } finally {
+        lock.unlock();
+    }```
 `Fluent Style`
 ```Java
     Lock lock = RedisLock.create().setService("redisSourceName").setLockName("simpleLock").useSimpleRedisLock();
-    lock.lock();
-    lock.isLocking();
-    lock.unlock();
+    try {
+        lock.lock();
+        lock.isLocking();
+    } finally {
+        lock.unlock();
+    }
 ```
 ### RedisQueue
 `Normal Style`

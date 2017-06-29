@@ -6,23 +6,27 @@ Tips：
 Overview
 -
 #### `RedisCache`是基于`Jedis`的SDK。
-+ ①实现了防穿透`缓存`，`分布式锁`，`分布式队列`，本地缓存同步更新<br>
-+ ②个性化的redis源配置支持<br>
++ ①强大的泛型支持，实现了任意java对象简单存\取<br>
++ ②增强`缓存`接口：支持防穿透设计，以及本地缓存同步更新<br>
++ ③提供多种`分布式锁`，`分布式队列`支持<br>
++ ④个性化的redis源配置支持<br>
 
 # Usage:
 
 ### RedisCache
 `Normal Style`
 ```Java
-	IRedisMap<String, String> cache = Redis.use("redisSourceName");
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    IRedisMap<Integer, User> cache = Redis.use("redisSourceName");
+    User user = new User();
+    cache.put(1001,user);
+    User redisUser = cache.get(1001);
 ```
 `Fluent Style`
 ```Java
-	IRedisMap<String, String> cache = Redis.create().setServiceName("redisSourceName").build();
-	cache.put("redisKey","redisValue");
-	cache.get("redisKey");
+    IRedisMap<Integer, User> cache = Redis.create().setServiceName("redisSourceName").build();
+    User user = new User();
+    cache.put(1001,user);
+    User redisUser = cache.get(1001);
 ```
 ### RedisLock
 `Normal Style`
